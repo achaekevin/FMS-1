@@ -9,6 +9,58 @@ const signToken = (id) =>
 
 /**
  * @swagger
+ * /auth/register:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Register a new user account
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name, email, password]
+ *             properties:
+ *               name:     { type: string, example: "John Doe" }
+ *               email:    { type: string, example: "john@church.org" }
+ *               password: { type: string, minLength: 6, example: "secret123" }
+ *               role:
+ *                 type: string
+ *                 enum: [administrator, pastor, treasurer]
+ *                 default: treasurer
+ *     responses:
+ *       201: { description: Account created and token returned }
+ *       409: { description: Email already registered }
+ */
+exports.register = async (req, res) => {
+  try {
+    const { name, email, password, role } = req.body;
+
+    const exists = await User.findOne({ where: { email: email.toLowerCase().trim() } });
+    if (exists) return api.conflict(res, 'Email is already registered');
+
+    const user = await User.create({
+      name: name.trim(),
+      email: email.toLowerCase().trim(),
+      password,
+      role: role || 'treasurer',
+      status: 'active',
+    });
+
+    const token = signToken(user.id);
+    await audit.log(user.id, 'CREATE', 'AUTH', `New user registered: ${user.name} (${user.role})`, null, req);
+    logger.info(`Register: ${user.email} (${user.role})`);
+
+    return api.created(res, { token, user: user.toSafeJSON() }, 'Account created successfully');
+  } catch (err) {
+    logger.error('register error:', err);
+    return api.error(res, 'Registration failed');
+  }
+};
+
+/**
+ * @swagger
  * /auth/login:
  *   post:
  *     tags: [Auth]
