@@ -9,3 +9,6 @@ dist/
 Thumbs.db
 logs/.gitkeep
 uploads/.gitkeep
+.env 
+.env.* 
+*.env 
