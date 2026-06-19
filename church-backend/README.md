@@ -1,4 +1,4 @@
-# KTPAG Financial Management System — Backend API
+#   Grace Life Financial Management System — Backend API
 
 A production-ready REST API for managing KTPAG's finances: income, expenses, funds, member contributions, M-Pesa payments, reports, and audit logs.
 
@@ -52,9 +52,9 @@ API runs at `http://localhost:5000`. Swagger docs at `http://localhost:5000/api-
 
 | Role | Email | Password |
 |---|---|---|
-| Administrator | admin@ktpag.org | admin123 |
-| Pastor | pastor@ktpag.org | pastor123 |
-| Treasurer | treasurer@ktpag.org | treasurer123 |
+| Administrator | admin@gacelife.org | GLC@dmin2024! |
+| Pastor | pastor@gracelife.org | GLC@pastor2024! |
+| Treasurer |treasurer@gracelife.org| GLC@Treasurer2024! |
 
 ## Clean-Slate Data
 

@@ -51,14 +51,18 @@ const send = async (to, message) => {
 
 /** Donation confirmation */
 const sendDonationConfirmation = (phone, name, amount, receiptNo) =>
-  send(phone, `Hi ${name}, your donation of KES ${Number(amount).toLocaleString()} has been received. Receipt: ${receiptNo}. God bless you! - Grace Life Church`);
+  send(phone, `Hi ${name}, your donation of KES ${Number(amount).toLocaleString()} has been received. Receipt: ${receiptNo}. God bless you! - ${process.env.CHURCH_NAME || 'Grace Life Church'}`);
 
 /** Event reminder */
 const sendEventReminder = (phone, name, eventTitle, eventDate) =>
-  send(phone, `Hi ${name}, reminder: "${eventTitle}" is on ${eventDate}. We look forward to seeing you! - Grace Life Church`);
+  send(phone, `Hi ${name}, reminder: "${eventTitle}" is on ${eventDate}. We look forward to seeing you! - ${process.env.CHURCH_NAME || 'Grace Life Church'}`);
 
 /** Payment confirmation */
 const sendPaymentConfirmation = (phone, name, amount, mpesaRef) =>
-  send(phone, `Hi ${name}, M-Pesa payment of KES ${Number(amount).toLocaleString()} confirmed. Ref: ${mpesaRef}. Thank you! - Grace Life Church`);
+  send(phone, `Hi ${name}, M-Pesa payment of KES ${Number(amount).toLocaleString()} confirmed. Ref: ${mpesaRef}. Thank you! - ${process.env.CHURCH_NAME || 'Grace Life Church'}`);
 
-module.exports = { send, sendDonationConfirmation, sendEventReminder, sendPaymentConfirmation };
+/** Announcement broadcast */
+const sendAnnouncement = (phone, name, title, content) =>
+  send(phone, `Hi ${name}, ANNOUNCEMENT: ${title} - ${content} - ${process.env.CHURCH_NAME || 'Grace Life Church'}`);
+
+module.exports = { send, sendDonationConfirmation, sendEventReminder, sendPaymentConfirmation, sendAnnouncement };

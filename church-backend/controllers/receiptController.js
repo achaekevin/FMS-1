@@ -1,10 +1,9 @@
 const path = require('path');
 const { Receipt, Income, Member, User } = require('../models');
-const api   = require('../utils/apiResponse');
-const audit = require('../services/auditService');
+const api    = require('../utils/apiResponse');
+const audit  = require('../services/auditService');
 const { generateReceiptPDF } = require('../services/receiptPdfService');
-const emailSvc = require('../services/emailService');
-const smsSvc   = require('../services/smsService');
+const comms  = require('../services/communicationService');
 const { getPagination } = require('../utils/helpers');
 const { Op } = require('sequelize');
 
@@ -98,18 +97,14 @@ exports.generate = async (req, res) => {
     await audit.log(req.user.id, 'CREATE', 'RECEIPT',
       `Generated receipt ${receiptNumber} for ${finalData.memberName}`, { receiptId: receipt.id }, req);
 
-    // Optional email / SMS
-    if (sendEmail && incomeData.memberEmail) {
-      emailSvc.sendReceiptEmail(
-        { fullName: finalData.memberName, email: incomeData.memberEmail },
-        receipt
-      ).catch(e => {});
-    }
-    if (sendSms && incomeData.memberPhone) {
-      smsSvc.sendDonationConfirmation(
-        incomeData.memberPhone, finalData.memberName,
-        finalData.amount, receiptNumber
-      ).catch(e => {});
+    // Optional comms — unified service handles SMS + Email + WhatsApp
+    if ((sendEmail || sendSms) && incomeData.memberId) {
+      const member = await Member.findByPk(incomeData.memberId,
+        { attributes: ['id','fullName','email','phone'] });
+      if (member) {
+        comms.sendDonationConfirmation({ member, receipt: { ...finalData, ...receipt.dataValues } })
+          .catch(() => {});
+      }
     }
 
     const full = await Receipt.findByPk(receipt.id, { include: INCLUDE });

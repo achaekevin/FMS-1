@@ -1,6 +1,7 @@
-const { Announcement, User } = require('../models');
-const api   = require('../utils/apiResponse');
-const audit = require('../services/auditService');
+const { Announcement, User, Member } = require('../models');
+const api    = require('../utils/apiResponse');
+const audit  = require('../services/auditService');
+const comms  = require('../services/communicationService');
 const { getPagination } = require('../utils/helpers');
 const { Op } = require('sequelize');
 
@@ -41,6 +42,16 @@ exports.create = async (req, res) => {
     const a = await Announcement.create({ ...req.body, createdBy: req.user.id });
     await audit.log(req.user.id, 'CREATE', 'ANNOUNCEMENT', `Posted: ${a.title}`, { id: a.id }, req);
     const full = await Announcement.findByPk(a.id, { include: INCLUDE });
+
+    // Auto-broadcast to all active members when notify flag is set
+    if (req.body.notifyMembers) {
+      const members = await Member.findAll({
+        where: { status: 'active' },
+        attributes: ['id', 'fullName', 'email', 'phone'],
+      });
+      comms.broadcastAnnouncement({ members, announcement: a }).catch(() => {});
+    }
+
     return api.created(res, full, 'Announcement published');
   } catch (err) { return api.error(res, err.message); }
 };

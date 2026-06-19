@@ -98,4 +98,82 @@ const sendPaymentConfirmation = async (member, transaction) => {
   return send({ to: member.email, subject: 'M-Pesa Payment Confirmed', html });
 };
 
-module.exports = { send, sendReceiptEmail, sendPasswordResetEmail, sendPaymentConfirmation };
+/**
+ * Send announcement email
+ */
+const sendAnnouncementEmail = async (recipient, announcement) => {
+  const priorityColor = { High: '#dc2626', Medium: '#d97706', Low: '#059669' };
+  const color = priorityColor[announcement.priority] || '#4f4fe8';
+  const html = `
+    <div style="font-family:sans-serif;max-width:560px;margin:auto;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden">
+      <div style="background:#1c1c52;padding:24px;text-align:center">
+        <h2 style="color:#f5c842;margin:0">${process.env.CHURCH_NAME || 'Grace Life Church'}</h2>
+        <p style="color:#a5bafd;margin:4px 0 0">Announcement</p>
+      </div>
+      <div style="padding:24px">
+        <span style="display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;background:${color}22;color:${color};margin-bottom:12px">${announcement.priority || 'General'}</span>
+        <h3 style="color:#1c1c52;margin:0 0 12px">${announcement.title}</h3>
+        <p style="color:#374151;line-height:1.6">${announcement.content}</p>
+        ${announcement.expiryDate ? `<p style="color:#9ca3af;font-size:12px;margin-top:16px">Valid until: ${new Date(announcement.expiryDate).toLocaleDateString('en-KE',{dateStyle:'long'})}</p>` : ''}
+      </div>
+      <div style="background:#f9fafb;padding:16px;text-align:center;font-size:12px;color:#9ca3af">
+        ${process.env.CHURCH_NAME || 'Grace Life Church'} · Nairobi, Kenya
+      </div>
+    </div>`;
+  return send({ to: recipient.email, subject: `📢 ${announcement.title}`, html });
+};
+
+/**
+ * Send member financial statement email (with summary data object)
+ * statement: { period, totalDonations, lastDonation, donationCount, items[] }
+ */
+const sendStatementEmail = async (member, statement) => {
+  const rows = (statement.items || []).map((item, i) => `
+    <tr style="background:${i % 2 === 0 ? '#f9fafb' : '#fff'}">
+      <td style="padding:8px;color:#374151;border-bottom:1px solid #f3f4f6">${new Date(item.date).toLocaleDateString('en-KE')}</td>
+      <td style="padding:8px;color:#374151;border-bottom:1px solid #f3f4f6">${item.type || item.category || '—'}</td>
+      <td style="padding:8px;color:#374151;border-bottom:1px solid #f3f4f6">${item.paymentMethod || '—'}</td>
+      <td style="padding:8px;font-weight:600;color:#059669;border-bottom:1px solid #f3f4f6;text-align:right">KES ${Number(item.amount).toLocaleString()}</td>
+    </tr>`).join('');
+
+  const html = `
+    <div style="font-family:sans-serif;max-width:620px;margin:auto;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden">
+      <div style="background:#1c1c52;padding:24px;text-align:center">
+        <h2 style="color:#f5c842;margin:0">${process.env.CHURCH_NAME || 'Grace Life Church'}</h2>
+        <p style="color:#a5bafd;margin:4px 0 0">Giving Statement · ${statement.period}</p>
+      </div>
+      <div style="padding:24px">
+        <p>Dear <strong>${member.fullName}</strong>,</p>
+        <p>Here is your giving statement for <strong>${statement.period}</strong>:</p>
+        <div style="display:flex;gap:16px;margin:20px 0;flex-wrap:wrap">
+          <div style="flex:1;min-width:140px;background:#f0fdf4;border-radius:8px;padding:16px;text-align:center">
+            <div style="font-size:22px;font-weight:700;color:#059669">KES ${Number(statement.totalDonations).toLocaleString()}</div>
+            <div style="color:#6b7280;font-size:12px;margin-top:4px">Total Giving</div>
+          </div>
+          <div style="flex:1;min-width:140px;background:#eff6ff;border-radius:8px;padding:16px;text-align:center">
+            <div style="font-size:22px;font-weight:700;color:#3b82f6">${statement.donationCount || 0}</div>
+            <div style="color:#6b7280;font-size:12px;margin-top:4px">Transactions</div>
+          </div>
+        </div>
+        ${rows ? `
+        <table style="width:100%;border-collapse:collapse;margin-top:8px">
+          <thead>
+            <tr style="background:#1c1c52">
+              <th style="padding:10px 8px;color:white;text-align:left;font-size:12px">Date</th>
+              <th style="padding:10px 8px;color:white;text-align:left;font-size:12px">Category</th>
+              <th style="padding:10px 8px;color:white;text-align:left;font-size:12px">Method</th>
+              <th style="padding:10px 8px;color:white;text-align:right;font-size:12px">Amount</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>` : '<p style="color:#9ca3af;text-align:center">No transactions in this period.</p>'}
+        <p style="color:#6b7280;font-size:13px;margin-top:20px">Thank you for your faithful giving. God bless you!</p>
+      </div>
+      <div style="background:#f9fafb;padding:16px;text-align:center;font-size:12px;color:#9ca3af">
+        ${process.env.CHURCH_NAME || 'Grace Life Church'} · Nairobi, Kenya
+      </div>
+    </div>`;
+  return send({ to: member.email, subject: `Your Giving Statement — ${statement.period}`, html });
+};
+
+module.exports = { send, sendReceiptEmail, sendPasswordResetEmail, sendPaymentConfirmation, sendAnnouncementEmail, sendStatementEmail };

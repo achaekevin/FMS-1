@@ -33,6 +33,12 @@ User.hasMany(Expense,    { foreignKey: 'recordedBy', as: 'recordedExpenses' });
 Expense.belongsTo(Fund,  { foreignKey: 'fundId',     as: 'fund' });
 Fund.hasMany(Expense,    { foreignKey: 'fundId',     as: 'expenses' });
 
+Expense.belongsTo(User,  { foreignKey: 'pastorId',   as: 'pastor' });
+User.hasMany(Expense,    { foreignKey: 'pastorId',   as: 'pastorApprovals' });
+
+Expense.belongsTo(User,  { foreignKey: 'adminId',    as: 'admin' });
+User.hasMany(Expense,    { foreignKey: 'adminId',    as: 'adminFinalizations' });
+
 // ── AuditLog associations ─────────────────────────────────
 AuditLog.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 User.hasMany(AuditLog,   { foreignKey: 'userId', as: 'auditLogs' });

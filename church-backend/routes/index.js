@@ -25,6 +25,7 @@ router.use('/announcements', require('./announcementRoutes'));
 router.use('/settings',      require('./settingsRoutes'));
 router.use('/search',        require('./searchRoutes'));
 router.use('/backup',        require('./backupRoutes'));
+router.use('/communications', require('./communicationRoutes'));
 
 // ── Health check ──────────────────────────────────────────
 router.get('/health', (req, res) => res.json({

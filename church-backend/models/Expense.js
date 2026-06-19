@@ -18,7 +18,10 @@ const Expense = sequelize.define('Expense', {
     references: { model: 'funds', key: 'id' },
   },
   category: {
-    type: DataTypes.ENUM('Salaries', 'Utilities', 'Maintenance', 'Ministry', 'Welfare', 'Missions', 'Equipment', 'Stationery', 'Transport', 'Other'),
+    type: DataTypes.ENUM(
+      'Salaries', 'Utilities', 'Maintenance', 'Ministry',
+      'Welfare', 'Missions', 'Equipment', 'Stationery', 'Transport', 'Other'
+    ),
     allowNull: false,
   },
   amount: {
@@ -30,9 +33,10 @@ const Expense = sequelize.define('Expense', {
     type: DataTypes.TEXT,
     allowNull: true,
   },
+  // Legacy field kept for backward compat — populated by workflow
   approvedBy: {
     type: DataTypes.STRING(120),
-    allowNull: false,
+    allowNull: true,
   },
   receiptPath: {
     type: DataTypes.STRING(255),
@@ -43,9 +47,42 @@ const Expense = sequelize.define('Expense', {
     allowNull: false,
     defaultValue: DataTypes.NOW,
   },
+
+  // ── Approval workflow ─────────────────────────────────────
   status: {
-    type: DataTypes.ENUM('pending', 'approved', 'rejected'),
-    defaultValue: 'approved',
+    type: DataTypes.ENUM('pending_pastor', 'pending_admin', 'approved', 'rejected'),
+    allowNull: false,
+    defaultValue: 'pending_pastor',
+  },
+
+  // Stage 1 – Pastor
+  pastorId: {
+    type: DataTypes.INTEGER.UNSIGNED,
+    allowNull: true,
+    references: { model: 'users', key: 'id' },
+  },
+  pastorNote: {
+    type: DataTypes.STRING(500),
+    allowNull: true,
+  },
+  pastorApprovedAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
+
+  // Stage 2 – Admin
+  adminId: {
+    type: DataTypes.INTEGER.UNSIGNED,
+    allowNull: true,
+    references: { model: 'users', key: 'id' },
+  },
+  adminNote: {
+    type: DataTypes.STRING(500),
+    allowNull: true,
+  },
+  adminFinalizedAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
   },
 }, {
   tableName: 'expenses',

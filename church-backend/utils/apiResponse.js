@@ -20,6 +20,7 @@ const notFound    = (res, message = 'Resource not found')    => error(res, messa
 const unauthorized= (res, message = 'Unauthorized')          => error(res, message, 401);
 const forbidden   = (res, message = 'Access denied')         => error(res, message, 403);
 const badRequest  = (res, message, errs = null)              => error(res, message, 400, errs);
+const conflict    = (res, message = 'Resource already exists') => error(res, message, 409);
 
 const paginate = (res, data, total, page, limit, message = 'Success') =>
   success(res, data, message, 200, {
@@ -31,4 +32,4 @@ const paginate = (res, data, total, page, limit, message = 'Success') =>
     hasPrev:    page > 1,
   });
 
-module.exports = { success, created, error, notFound, unauthorized, forbidden, badRequest, paginate };
+module.exports = { success, created, error, notFound, unauthorized, forbidden, badRequest, conflict, paginate };
