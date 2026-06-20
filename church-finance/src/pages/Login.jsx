@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { CHURCH_NAME, CHURCH_TAGLINE, CHURCH_ADDRESS } from '../utils/mockData'
 import {
@@ -182,7 +182,6 @@ export default function Login() {
                   <h2 className="text-2xl font-bold text-gray-900">Sign In</h2>
                   <p className="text-sm text-gray-400 mt-1">Enter your credentials to access the system</p>
                 </div>
-
                 <form onSubmit={handleSubmit} className="space-y-5">
                   {/* Email */}
                   <div className="animate-fade-slide-up" style={{ animationDelay: '200ms' }}>
@@ -261,6 +260,14 @@ export default function Login() {
                   <Shield className="w-3.5 h-3.5 text-gray-300" />
                   <p className="text-xs text-gray-400">Secured with role-based access control</p>
                 </div>
+
+                {/* Sign up link */}
+                <p className="mt-5 text-center text-sm text-gray-400 animate-fade-slide-up" style={{ animationDelay: '420ms' }}>
+                  Don't have an account?{' '}
+                  <Link to="/register" className="text-brand-600 font-semibold hover:text-brand-700 hover:underline transition-colors">
+                    Create one
+                  </Link>
+                </p>
               </div>
             </div>
 

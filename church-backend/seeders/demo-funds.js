@@ -1,9 +1,5 @@
 'use strict';
 
-// Seeds the four standard fund accounts with zero balances.
-// Balances populate automatically as income/expenses are recorded
-// against each fund (see services/fundService.js).
-
 module.exports = {
   up: async (queryInterface) => {
     await queryInterface.bulkInsert('funds', [
