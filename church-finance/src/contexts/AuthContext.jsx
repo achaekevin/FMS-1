@@ -78,8 +78,24 @@ export const AuthProvider = ({ children }) => {
     if (!user) return false
     const perms = {
       administrator: ['all'],
-      pastor:    ['view_dashboard','view_income','view_expense','view_members','view_reports','view_funds','approve_expense'],
-      treasurer: ['view_dashboard','manage_income','manage_expense','view_members','view_reports','view_funds','export','mpesa','audit'],
+      pastor: [
+        'view_dashboard','view_income','view_expense','approve_expense',
+        'view_members','view_reports','view_funds',
+        'view_events','view_attendance','view_announcements','view_notifications',
+      ],
+      treasurer: [
+        'view_dashboard','manage_income','manage_expense',
+        'view_members','manage_members',
+        'view_reports','export',
+        'view_funds','manage_funds',
+        'mpesa','audit',
+        'manage_budget','view_events','manage_events',
+        'manage_attendance','view_attendance',
+        'manage_assets','manage_payroll',
+        'manage_branches','manage_announcements',
+        'manage_documents','manage_communications',
+        'view_notifications',
+      ],
     }
     const userPerms = perms[user.role] || []
     return userPerms.includes('all') || userPerms.includes(permission)

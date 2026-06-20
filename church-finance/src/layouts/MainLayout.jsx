@@ -17,36 +17,36 @@ const navSections = [
   {
     label: 'Main Menu',
     items: [
-      { path: '/dashboard', label: 'Dashboard',    icon: LayoutDashboard },
-      { path: '/income',    label: 'Income',        icon: TrendingUp      },
-      { path: '/expenses',  label: 'Expenses',      icon: TrendingDown    },
-      { path: '/funds',     label: 'Fund Accounts', icon: Wallet          },
-      { path: '/members',   label: 'Members',       icon: Users           },
-      { path: '/mpesa',     label: 'M-Pesa',        icon: Phone           },
+      { path: '/dashboard', label: 'Dashboard',    icon: LayoutDashboard, permission: 'view_dashboard' },
+      { path: '/income',    label: 'Income',        icon: TrendingUp,      permission: 'view_income'   },
+      { path: '/expenses',  label: 'Expenses',      icon: TrendingDown,    permission: 'view_expense'  },
+      { path: '/funds',     label: 'Fund Accounts', icon: Wallet,          permission: 'view_funds'    },
+      { path: '/members',   label: 'Members',       icon: Users,           permission: 'view_members'  },
+      { path: '/mpesa',     label: 'M-Pesa',        icon: Phone,           permission: 'mpesa'         },
     ],
   },
   {
     label: 'Management',
     items: [
-      { path: '/budget',        label: 'Budget',        icon: Wallet       },
-      { path: '/events',        label: 'Events',        icon: Calendar     },
-      { path: '/attendance',    label: 'Attendance',    icon: UserCheck    },
-      { path: '/assets',        label: 'Assets',        icon: Package      },
-      { path: '/payroll',       label: 'Payroll',       icon: Users2       },
-      { path: '/branches',      label: 'Branches',      icon: GitBranch    },
-      { path: '/announcements', label: 'Announcements', icon: Megaphone    },
-      { path: '/documents',     label: 'Documents',     icon: FolderOpen   },
+      { path: '/budget',        label: 'Budget',        icon: Wallet,     permission: 'manage_budget'      },
+      { path: '/events',        label: 'Events',        icon: Calendar,   permission: 'view_events'        },
+      { path: '/attendance',    label: 'Attendance',    icon: UserCheck,  permission: 'view_attendance'    },
+      { path: '/assets',        label: 'Assets',        icon: Package,    permission: 'manage_assets'      },
+      { path: '/payroll',       label: 'Payroll',       icon: Users2,     permission: 'manage_payroll'     },
+      { path: '/branches',      label: 'Branches',      icon: GitBranch,  permission: 'manage_branches'    },
+      { path: '/announcements', label: 'Announcements', icon: Megaphone,  permission: 'manage_announcements'},
+      { path: '/documents',     label: 'Documents',     icon: FolderOpen, permission: 'manage_documents'   },
     ],
   },
   {
     label: 'Reports & Admin',
     items: [
-      { path: '/reports',       label: 'Reports',        icon: FileText      },
-      { path: '/audit',         label: 'Audit Logs',     icon: ClipboardList },
-      { path: '/communication', label: 'Communications', icon: MessageSquare },
-      { path: '/notifications', label: 'Notifications',  icon: Bell          },
-      { path: '/settings',      label: 'Settings',       icon: Settings      },
-      { path: '/backup',        label: 'Backup',         icon: Building2     },
+      { path: '/reports',       label: 'Reports',        icon: FileText,      permission: 'view_reports'        },
+      { path: '/audit',         label: 'Audit Logs',     icon: ClipboardList, permission: 'audit'               },
+      { path: '/communication', label: 'Communications', icon: MessageSquare, permission: 'manage_communications'},
+      { path: '/notifications', label: 'Notifications',  icon: Bell,          permission: 'view_notifications'  },
+      { path: '/settings',      label: 'Settings',       icon: Settings,      permission: 'manage_settings'     },
+      { path: '/backup',        label: 'Backup',         icon: Building2,     permission: 'manage_backup'       },
     ],
   },
 ]
@@ -69,7 +69,7 @@ export default function MainLayout({ children }) {
       const item = section.items.find(i => i.path === path)
       if (item) return item.label
     }
-    return path.replace('/', '') || 'Dashboard'
+    return path.slice(1) || 'Dashboard'
   }
 
   const Sidebar = ({ mobile = false }) => (
@@ -92,46 +92,59 @@ export default function MainLayout({ children }) {
 
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-4">
-        {navSections.map(section => (
-          <div key={section.label}>
-            <p className="text-xs font-semibold text-brand-400 uppercase tracking-wider px-3 mb-2">{section.label}</p>
-            <div className="space-y-0.5">
-              {section.items.map(item => {
-                const Icon = item.icon
-                const active = location.pathname === item.path
-                const isNotif = item.path === '/notifications'
-                return (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    onClick={() => setSidebarOpen(false)}
-                    className={clsx('sidebar-link relative', active ? 'sidebar-link-active' : 'sidebar-link-inactive')}
-                  >
-                    <Icon className="w-4 h-4 flex-shrink-0" />
-                    <span>{item.label}</span>
-                    {isNotif && unreadNotifications > 0 && (
-                      <span className="ml-auto bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
-                        {unreadNotifications > 9 ? '9+' : unreadNotifications}
-                      </span>
-                    )}
-                    {active && !isNotif && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-gold-400" />}
-                  </Link>
-                )
-              })}
+        {navSections.map(section => {
+          const visibleItems = section.items.filter(item =>
+            !item.permission || can(item.permission)
+          )
+          if (visibleItems.length === 0) return null
+          return (
+            <div key={section.label}>
+              <p className="text-xs font-semibold text-brand-400 uppercase tracking-wider px-3 mb-2">{section.label}</p>
+              <div className="space-y-0.5">
+                {visibleItems.map(item => {
+                  const Icon = item.icon
+                  const active = location.pathname === item.path
+                  const isNotif = item.path === '/notifications'
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      onClick={() => setSidebarOpen(false)}
+                      className={clsx('sidebar-link relative', active ? 'sidebar-link-active' : 'sidebar-link-inactive')}
+                    >
+                      <Icon className="w-4 h-4 flex-shrink-0" />
+                      <span>{item.label}</span>
+                      {isNotif && unreadNotifications > 0 && (
+                        <span className="ml-auto bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                          {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                        </span>
+                      )}
+                      {active && !isNotif && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-gold-400" />}
+                    </Link>
+                  )
+                })}
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </nav>
 
       {/* User */}
       <div className="px-3 py-4 border-t border-white/10">
         <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/5">
           <div className="w-8 h-8 rounded-full bg-brand-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-            {user?.avatar}
+            {user?.avatar || (user?.name?.split(' ').map(n => n[0]).slice(0,2).join('') || '?')}
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-white text-sm font-medium truncate">{user?.name}</div>
-            <div className="text-brand-300 text-xs capitalize">{user?.role}</div>
+            <div className={clsx('text-xs capitalize font-medium px-1.5 py-0.5 rounded-full inline-block mt-0.5',
+              user?.role === 'administrator' ? 'bg-gold-500/30 text-gold-300' :
+              user?.role === 'treasurer'     ? 'bg-green-500/30 text-green-300' :
+              user?.role === 'pastor'        ? 'bg-purple-500/30 text-purple-300' :
+              'text-brand-300'
+            )}>
+              {user?.role}
+            </div>
           </div>
         </div>
         <button
