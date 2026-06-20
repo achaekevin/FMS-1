@@ -1,6 +1,6 @@
 #   Grace Life Financial Management System — Backend API
 
-A production-ready REST API for managing KTPAG's finances: income, expenses, funds, member contributions, M-Pesa payments, reports, and audit logs.
+A production-ready REST API for managing Grace life finances: income, expenses, funds, member contributions, M-Pesa payments, reports, and audit logs.
 
 ## Tech Stack
 
