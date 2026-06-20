@@ -16,6 +16,8 @@ const { Branch, BranchUser } = require('./Branch');
 const Announcement     = require('./Announcement');
 const Setting          = require('./Setting');
 const Document         = require('./Document');
+const AttendanceSession = require('./AttendanceSession');
+const AttendanceRecord  = require('./AttendanceRecord');
 
 // ── Income associations ───────────────────────────────────
 Income.belongsTo(Member, { foreignKey: 'memberId',   as: 'member' });
@@ -95,8 +97,22 @@ User.hasMany(Announcement,   { foreignKey: 'createdBy', as: 'announcements' });
 Document.belongsTo(User, { foreignKey: 'uploadedBy', as: 'uploader' });
 User.hasMany(Document,   { foreignKey: 'uploadedBy', as: 'documents' });
 
+// ── Attendance associations ───────────────────────────────
+AttendanceSession.belongsTo(User,   { foreignKey: 'createdBy', as: 'creator' });
+User.hasMany(AttendanceSession,     { foreignKey: 'createdBy', as: 'attendanceSessions' });
+
+AttendanceRecord.belongsTo(AttendanceSession, { foreignKey: 'sessionId', as: 'session' });
+AttendanceSession.hasMany(AttendanceRecord,   { foreignKey: 'sessionId', as: 'records' });
+
+AttendanceRecord.belongsTo(Member, { foreignKey: 'memberId',  as: 'member' });
+Member.hasMany(AttendanceRecord,   { foreignKey: 'memberId',  as: 'attendanceRecords' });
+
+AttendanceRecord.belongsTo(User,   { foreignKey: 'recordedBy', as: 'recorder' });
+User.hasMany(AttendanceRecord,     { foreignKey: 'recordedBy', as: 'recordedAttendance' });
+
 module.exports = {
   User, Member, Fund, Income, Expense, AuditLog, MpesaTransaction,
   Notification, Budget, Receipt, Event, Asset, Employee, SalaryRecord,
   Branch, BranchUser, Announcement, Setting, Document,
+  AttendanceSession, AttendanceRecord,
 };
