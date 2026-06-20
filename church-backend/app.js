@@ -49,7 +49,7 @@ app.use('/uploads', express.static('uploads'));
 // Ensure upload sub-directories exist
 const fs   = require('fs');
 const path = require('path');
-['uploads/receipts','uploads/payslips','backups'].forEach(dir => {
+['uploads/receipts','uploads/payslips','uploads/documents','backups'].forEach(dir => {
   const full = path.join(__dirname, dir);
   if (!fs.existsSync(full)) fs.mkdirSync(full, { recursive: true });
 });

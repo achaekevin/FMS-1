@@ -59,7 +59,9 @@ exports.create = async (req, res) => {
 
     const full = await Income.findByPk(record.id, { include: INCLUDE });
     await audit.log(req.user.id, 'CREATE', 'INCOME',
-      `Recorded income: ${req.body.type} KES ${req.body.amount}`, { incomeId: record.id }, req);
+      `Recorded income: ${req.body.type} KES ${req.body.amount}`,
+      { incomeId: record.id }, req,
+      { after: full });
     return api.created(res, full, 'Income recorded successfully');
   } catch (err) {
     await t.rollback();
@@ -73,6 +75,8 @@ exports.update = async (req, res) => {
     const record = await Income.findByPk(req.params.id, { transaction: t });
     if (!record) { await t.rollback(); return api.notFound(res, 'Income record not found'); }
 
+    const beforeSnap = audit.snapshot(record);
+
     // Reverse old fund effect, apply new
     if (record.fundId) await fund.reverseCreditFund(record.fundId, record.amount, t);
     if (req.body.fundId) await fund.creditFund(req.body.fundId, req.body.amount, t);
@@ -81,7 +85,10 @@ exports.update = async (req, res) => {
     await t.commit();
 
     const full = await Income.findByPk(record.id, { include: INCLUDE });
-    await audit.log(req.user.id, 'UPDATE', 'INCOME', `Updated income #${record.id}`, { incomeId: record.id }, req);
+    await audit.log(req.user.id, 'UPDATE', 'INCOME',
+      `Updated income #${record.id}`,
+      { incomeId: record.id }, req,
+      { before: { ...beforeSnap }, after: full });
     return api.success(res, full, 'Income updated');
   } catch (err) {
     await t.rollback();
@@ -95,11 +102,15 @@ exports.remove = async (req, res) => {
     const record = await Income.findByPk(req.params.id, { transaction: t });
     if (!record) { await t.rollback(); return api.notFound(res, 'Income record not found'); }
 
+    const beforeSnap = audit.snapshot(record);
     if (record.fundId) await fund.reverseCreditFund(record.fundId, record.amount, t);
     await record.destroy({ transaction: t });
     await t.commit();
 
-    await audit.log(req.user.id, 'DELETE', 'INCOME', `Deleted income #${req.params.id}`, null, req);
+    await audit.log(req.user.id, 'DELETE', 'INCOME',
+      `Deleted income #${req.params.id}`,
+      null, req,
+      { before: beforeSnap });
     return api.success(res, null, 'Income record deleted');
   } catch (err) {
     await t.rollback();

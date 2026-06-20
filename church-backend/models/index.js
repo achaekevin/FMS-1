@@ -15,6 +15,7 @@ const SalaryRecord     = require('./SalaryRecord');
 const { Branch, BranchUser } = require('./Branch');
 const Announcement     = require('./Announcement');
 const Setting          = require('./Setting');
+const Document         = require('./Document');
 
 // ── Income associations ───────────────────────────────────
 Income.belongsTo(Member, { foreignKey: 'memberId',   as: 'member' });
@@ -90,8 +91,12 @@ User.hasMany(BranchUser,     { foreignKey: 'userId',   as: 'branchUsers' });
 Announcement.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
 User.hasMany(Announcement,   { foreignKey: 'createdBy', as: 'announcements' });
 
+// ── Document associations ─────────────────────────────────
+Document.belongsTo(User, { foreignKey: 'uploadedBy', as: 'uploader' });
+User.hasMany(Document,   { foreignKey: 'uploadedBy', as: 'documents' });
+
 module.exports = {
   User, Member, Fund, Income, Expense, AuditLog, MpesaTransaction,
   Notification, Budget, Receipt, Event, Asset, Employee, SalaryRecord,
-  Branch, BranchUser, Announcement, Setting,
+  Branch, BranchUser, Announcement, Setting, Document,
 };

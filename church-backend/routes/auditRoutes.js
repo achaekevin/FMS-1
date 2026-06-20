@@ -5,7 +5,9 @@ const ctrl = require('../controllers/auditController');
 
 router.use(authenticate, adminOrTreasurer);
 
-router.get('/', ctrl.getAll);
-router.get('/:id', ctrl.getById);
+router.get('/stats',   ctrl.getStats);
+router.get('/export',  ctrl.exportCsv);
+router.get('/',        ctrl.getAll);
+router.get('/:id',     ctrl.getById);
 
 module.exports = router;

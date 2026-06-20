@@ -85,7 +85,8 @@ exports.create = async (req, res) => {
 
     await audit.log(req.user.id, 'CREATE', 'EXPENSE',
       `Expense submitted for approval: ${req.body.category} KES ${req.body.amount}`,
-      { expenseId: record.id }, req);
+      { expenseId: record.id }, req,
+      { after: full });
 
     // Notify all pastors
     await notifyRole('pastor',
@@ -112,6 +113,8 @@ exports.approve = async (req, res) => {
       return api.badRequest(res, `Cannot approve an expense with status "${record.status}"`);
 
     const { note } = req.body;
+    const beforeSnap = audit.snapshot(record);
+
     await record.update({
       status:          'pending_admin',
       pastorId:        req.user.id,
@@ -123,7 +126,8 @@ exports.approve = async (req, res) => {
 
     await audit.log(req.user.id, 'APPROVE', 'EXPENSE',
       `Pastor approved expense #${record.id} (${record.category} KES ${record.amount})`,
-      { expenseId: record.id }, req);
+      { expenseId: record.id }, req,
+      { before: beforeSnap, after: full });
 
     // Notify all admins
     await notifyRole('administrator',
@@ -151,6 +155,7 @@ exports.finalize = async (req, res) => {
       { await t.rollback(); return api.badRequest(res, `Cannot finalize an expense with status "${record.status}"`); }
 
     const { note } = req.body;
+    const beforeSnap = audit.snapshot(record);
 
     // Debit the fund now that the expense is fully approved
     if (record.fundId) await fundSvc.debitFund(record.fundId, record.amount, t);
@@ -160,7 +165,7 @@ exports.finalize = async (req, res) => {
       adminId:          req.user.id,
       adminNote:        note || null,
       adminFinalizedAt: new Date(),
-      approvedBy:       req.user.name,  // legacy field
+      approvedBy:       req.user.name,
     }, { transaction: t });
 
     await t.commit();
@@ -169,9 +174,9 @@ exports.finalize = async (req, res) => {
 
     await audit.log(req.user.id, 'APPROVE', 'EXPENSE',
       `Admin finalized expense #${record.id} (${record.category} KES ${record.amount})`,
-      { expenseId: record.id }, req);
+      { expenseId: record.id }, req,
+      { before: beforeSnap, after: full });
 
-    // Notify the treasurer who created the expense
     await notify.create(
       record.recordedBy,
       'Expense Fully Approved',
@@ -206,10 +211,11 @@ exports.reject = async (req, res) => {
     const { note } = req.body;
     if (!note) return api.badRequest(res, 'A rejection reason (note) is required');
 
+    const beforeSnap = audit.snapshot(record);
     const updateData = { status: 'rejected' };
     if (role === 'pastor') {
-      updateData.pastorId        = req.user.id;
-      updateData.pastorNote      = note;
+      updateData.pastorId         = req.user.id;
+      updateData.pastorNote       = note;
       updateData.pastorApprovedAt = new Date();
     } else {
       updateData.adminId          = req.user.id;
@@ -222,9 +228,9 @@ exports.reject = async (req, res) => {
 
     await audit.log(req.user.id, 'REJECT', 'EXPENSE',
       `${role} rejected expense #${record.id}: ${note}`,
-      { expenseId: record.id }, req);
+      { expenseId: record.id }, req,
+      { before: beforeSnap, after: full });
 
-    // Notify the treasurer who submitted it
     await notify.create(
       record.recordedBy,
       'Expense Rejected',
@@ -250,30 +256,28 @@ exports.update = async (req, res) => {
     if (record.status !== 'pending_pastor')
       return api.badRequest(res, 'Expense can only be edited while it is pending pastor approval');
 
-    // Prevent treasurer from editing someone else's expense
     if (req.user.role === 'treasurer' && record.recordedBy !== req.user.id)
       return api.forbidden(res, 'You can only edit your own expenses');
 
+    const beforeSnap = audit.snapshot(record);
     const data = { ...req.body };
     if (req.file) data.receiptPath = req.file.path;
-    delete data.status;      // status changes only via workflow endpoints
+    delete data.status;
     delete data.approvedBy;
 
     await record.update(data);
     const full = await Expense.findByPk(record.id, { include: INCLUDE });
 
     await audit.log(req.user.id, 'UPDATE', 'EXPENSE',
-      `Updated expense #${record.id}`, { expenseId: record.id }, req);
+      `Updated expense #${record.id}`,
+      { expenseId: record.id }, req,
+      { before: beforeSnap, after: full });
     return api.success(res, full, 'Expense updated');
   } catch (err) {
     return api.error(res, err.message);
   }
 };
 
-/**
- * DELETE /api/expenses/:id
- * Only allowed while pending_pastor. Approved expenses cannot be deleted.
- */
 exports.remove = async (req, res) => {
   try {
     const record = await Expense.findByPk(req.params.id);
@@ -282,9 +286,12 @@ exports.remove = async (req, res) => {
     if (!['pending_pastor', 'rejected'].includes(record.status))
       return api.badRequest(res, 'Only pending or rejected expenses can be deleted');
 
+    const beforeSnap = audit.snapshot(record);
     await record.destroy();
     await audit.log(req.user.id, 'DELETE', 'EXPENSE',
-      `Deleted expense #${req.params.id}`, null, req);
+      `Deleted expense #${req.params.id}`,
+      null, req,
+      { before: beforeSnap });
     return api.success(res, null, 'Expense deleted');
   } catch (err) {
     return api.error(res, err.message);

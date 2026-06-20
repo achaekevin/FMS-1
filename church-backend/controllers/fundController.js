@@ -25,7 +25,10 @@ exports.getById = async (req, res) => {
 exports.create = async (req, res) => {
   try {
     const f = await Fund.create(req.body);
-    await audit.log(req.user.id, 'CREATE', 'FUND', `Created fund: ${f.fundName}`, { fundId: f.id }, req);
+    await audit.log(req.user.id, 'CREATE', 'FUND',
+      `Created fund: ${f.fundName}`,
+      { fundId: f.id }, req,
+      { after: f });
     return api.created(res, f, 'Fund created successfully');
   } catch (err) {
     return api.error(res, err.message);
@@ -36,9 +39,13 @@ exports.update = async (req, res) => {
   try {
     const f = await Fund.findByPk(req.params.id);
     if (!f) return api.notFound(res, 'Fund not found');
+    const beforeSnap = audit.snapshot(f);
     const { description, isActive } = req.body;
     await f.update({ description, isActive });
-    await audit.log(req.user.id, 'UPDATE', 'FUND', `Updated fund: ${f.fundName}`, { fundId: f.id }, req);
+    await audit.log(req.user.id, 'UPDATE', 'FUND',
+      `Updated fund: ${f.fundName}`,
+      { fundId: f.id }, req,
+      { before: beforeSnap, after: f });
     return api.success(res, f, 'Fund updated');
   } catch (err) {
     return api.error(res, err.message);

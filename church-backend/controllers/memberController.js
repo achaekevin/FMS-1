@@ -38,7 +38,10 @@ exports.getById = async (req, res) => {
 exports.create = async (req, res) => {
   try {
     const member = await Member.create(req.body);
-    await audit.log(req.user.id, 'CREATE', 'MEMBER', `Added member: ${member.fullName}`, { memberId: member.id }, req);
+    await audit.log(req.user.id, 'CREATE', 'MEMBER',
+      `Added member: ${member.fullName}`,
+      { memberId: member.id }, req,
+      { after: member });
     return api.created(res, member, 'Member added successfully');
   } catch (err) {
     return api.error(res, err.message);
@@ -49,8 +52,12 @@ exports.update = async (req, res) => {
   try {
     const member = await Member.findByPk(req.params.id);
     if (!member) return api.notFound(res, 'Member not found');
+    const beforeSnap = audit.snapshot(member);
     await member.update(req.body);
-    await audit.log(req.user.id, 'UPDATE', 'MEMBER', `Updated member: ${member.fullName}`, { memberId: member.id }, req);
+    await audit.log(req.user.id, 'UPDATE', 'MEMBER',
+      `Updated member: ${member.fullName}`,
+      { memberId: member.id }, req,
+      { before: beforeSnap, after: member });
     return api.success(res, member, 'Member updated');
   } catch (err) {
     return api.error(res, err.message);
@@ -61,8 +68,12 @@ exports.remove = async (req, res) => {
   try {
     const member = await Member.findByPk(req.params.id);
     if (!member) return api.notFound(res, 'Member not found');
+    const beforeSnap = audit.snapshot(member);
     await member.update({ status: 'inactive' });
-    await audit.log(req.user.id, 'DELETE', 'MEMBER', `Deactivated member: ${member.fullName}`, null, req);
+    await audit.log(req.user.id, 'DELETE', 'MEMBER',
+      `Deactivated member: ${member.fullName}`,
+      null, req,
+      { before: beforeSnap });
     return api.success(res, null, 'Member deactivated');
   } catch (err) {
     return api.error(res, err.message);
