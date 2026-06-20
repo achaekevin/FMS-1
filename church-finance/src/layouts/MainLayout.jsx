@@ -9,7 +9,7 @@ import {
   LayoutDashboard, TrendingUp, TrendingDown, Wallet, Users, FileText,
   Phone, ClipboardList, Menu, X, LogOut, ChevronDown, Bell, Settings,
   Church, Sun, Moon, Search, Building2, Package, Users2, Megaphone,
-  GitBranch, Calendar, ChevronRight
+  GitBranch, Calendar, ChevronRight, MessageSquare, FolderOpen, UserCheck
 } from 'lucide-react'
 import clsx from 'clsx'
 
@@ -17,35 +17,38 @@ const navSections = [
   {
     label: 'Main Menu',
     items: [
-      { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-      { path: '/income', label: 'Income', icon: TrendingUp },
-      { path: '/expenses', label: 'Expenses', icon: TrendingDown },
-      { path: '/funds', label: 'Fund Accounts', icon: Wallet },
-      { path: '/members', label: 'Members', icon: Users },
-      { path: '/mpesa', label: 'M-Pesa', icon: Phone },
-    ]
+      { path: '/dashboard', label: 'Dashboard',    icon: LayoutDashboard },
+      { path: '/income',    label: 'Income',        icon: TrendingUp      },
+      { path: '/expenses',  label: 'Expenses',      icon: TrendingDown    },
+      { path: '/funds',     label: 'Fund Accounts', icon: Wallet          },
+      { path: '/members',   label: 'Members',       icon: Users           },
+      { path: '/mpesa',     label: 'M-Pesa',        icon: Phone           },
+    ],
   },
   {
     label: 'Management',
     items: [
-      { path: '/budget', label: 'Budget', icon: Wallet },
-      { path: '/events', label: 'Events', icon: Calendar },
-      { path: '/assets', label: 'Assets', icon: Package },
-      { path: '/payroll', label: 'Payroll', icon: Users2 },
-      { path: '/branches', label: 'Branches', icon: GitBranch },
-      { path: '/announcements', label: 'Announcements', icon: Megaphone },
-    ]
+      { path: '/budget',        label: 'Budget',        icon: Wallet       },
+      { path: '/events',        label: 'Events',        icon: Calendar     },
+      { path: '/attendance',    label: 'Attendance',    icon: UserCheck    },
+      { path: '/assets',        label: 'Assets',        icon: Package      },
+      { path: '/payroll',       label: 'Payroll',       icon: Users2       },
+      { path: '/branches',      label: 'Branches',      icon: GitBranch    },
+      { path: '/announcements', label: 'Announcements', icon: Megaphone    },
+      { path: '/documents',     label: 'Documents',     icon: FolderOpen   },
+    ],
   },
   {
     label: 'Reports & Admin',
     items: [
-      { path: '/reports', label: 'Reports', icon: FileText },
-      { path: '/audit', label: 'Audit Logs', icon: ClipboardList },
-      { path: '/notifications', label: 'Notifications', icon: Bell },
-      { path: '/settings', label: 'Settings', icon: Settings },
-      { path: '/backup', label: 'Backup', icon: Building2 },
-    ]
-  }
+      { path: '/reports',       label: 'Reports',        icon: FileText      },
+      { path: '/audit',         label: 'Audit Logs',     icon: ClipboardList },
+      { path: '/communication', label: 'Communications', icon: MessageSquare },
+      { path: '/notifications', label: 'Notifications',  icon: Bell          },
+      { path: '/settings',      label: 'Settings',       icon: Settings      },
+      { path: '/backup',        label: 'Backup',         icon: Building2     },
+    ],
+  },
 ]
 
 export default function MainLayout({ children }) {

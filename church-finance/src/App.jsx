@@ -23,6 +23,9 @@ import Announcements from './pages/Announcements'
 import Notifications from './pages/Notifications'
 import Settings from './pages/Settings'
 import Backup from './pages/Backup'
+import Communication from './pages/Communication'
+import Documents from './pages/Documents'
+import Attendance from './pages/Attendance'
 
 const Protected = ({ children }) => (
   <ProtectedRoute>
@@ -55,9 +58,12 @@ function App() {
           <Route path="/payroll"       element={<Protected><Payroll /></Protected>} />
           <Route path="/branches"      element={<Protected><Branches /></Protected>} />
           <Route path="/announcements" element={<Protected><Announcements /></Protected>} />
-          <Route path="/notifications" element={<Protected><Notifications /></Protected>} />
-          <Route path="/settings"      element={<Protected><Settings /></Protected>} />
-          <Route path="/backup"        element={<Protected><Backup /></Protected>} />
+          <Route path="/notifications"   element={<Protected><Notifications /></Protected>} />
+          <Route path="/communication"   element={<Protected><Communication /></Protected>} />
+          <Route path="/documents"       element={<Protected><Documents /></Protected>} />
+          <Route path="/attendance"      element={<Protected><Attendance /></Protected>} />
+          <Route path="/settings"        element={<Protected><Settings /></Protected>} />
+          <Route path="/backup"          element={<Protected><Backup /></Protected>} />
 
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />

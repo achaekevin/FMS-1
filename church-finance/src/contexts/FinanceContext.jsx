@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useCallback } from 'react'
+import useLocalStorage from '../hooks/useLocalStorage'
 import {
   INCOME_TRANSACTIONS, EXPENSE_TRANSACTIONS, MEMBERS,
   MPESA_TRANSACTIONS, AUDIT_LOGS, FUNDS, BUDGETS, EVENTS,
@@ -16,21 +17,21 @@ export const useFinance = () => {
 }
 
 export const FinanceProvider = ({ children }) => {
-  const [income, setIncome] = useState(INCOME_TRANSACTIONS)
-  const [expenses, setExpenses] = useState(EXPENSE_TRANSACTIONS)
-  const [members, setMembers] = useState(MEMBERS)
-  const [mpesa, setMpesa] = useState(MPESA_TRANSACTIONS)
-  const [logs, setLogs] = useState(AUDIT_LOGS)
-  const [funds, setFunds] = useState(FUNDS)
-  const [budgets, setBudgets] = useState(BUDGETS)
-  const [events, setEvents] = useState(EVENTS)
-  const [assets, setAssets] = useState(ASSETS)
-  const [employees, setEmployees] = useState(EMPLOYEES)
-  const [payroll, setPayroll] = useState(PAYROLL)
-  const [branches, setBranches] = useState(BRANCHES)
-  const [announcements, setAnnouncements] = useState(ANNOUNCEMENTS)
-  const [notifications, setNotifications] = useState(NOTIFICATIONS)
-  const [settings, setSettings] = useState({
+  const [income,        setIncome]        = useLocalStorage('glc_income',        INCOME_TRANSACTIONS)
+  const [expenses,      setExpenses]      = useLocalStorage('glc_expenses',      EXPENSE_TRANSACTIONS)
+  const [members,       setMembers]       = useLocalStorage('glc_members',       MEMBERS)
+  const [mpesa,         setMpesa]         = useLocalStorage('glc_mpesa',         MPESA_TRANSACTIONS)
+  const [logs,          setLogs]          = useLocalStorage('glc_logs',          AUDIT_LOGS)
+  const [funds,         setFunds]         = useLocalStorage('glc_funds',         FUNDS)
+  const [budgets,       setBudgets]       = useLocalStorage('glc_budgets',       BUDGETS)
+  const [events,        setEvents]        = useLocalStorage('glc_events',        EVENTS)
+  const [assets,        setAssets]        = useLocalStorage('glc_assets',        ASSETS)
+  const [employees,     setEmployees]     = useLocalStorage('glc_employees',     EMPLOYEES)
+  const [payroll,       setPayroll]       = useLocalStorage('glc_payroll',       PAYROLL)
+  const [branches,      setBranches]      = useLocalStorage('glc_branches',      BRANCHES)
+  const [announcements, setAnnouncements] = useLocalStorage('glc_announcements', ANNOUNCEMENTS)
+  const [notifications, setNotifications] = useLocalStorage('glc_notifications', NOTIFICATIONS)
+  const [settings,      setSettings]      = useLocalStorage('glc_settings',      {
     churchName: CHURCH_NAME, address: CHURCH_ADDRESS,
     phone: CHURCH_PHONE, email: CHURCH_EMAIL,
     currency: CHURCH_CURRENCY, fiscalYear: CHURCH_FISCAL_YEAR,
