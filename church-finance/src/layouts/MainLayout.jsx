@@ -9,7 +9,8 @@ import {
   LayoutDashboard, TrendingUp, TrendingDown, Wallet, Users, FileText,
   Phone, ClipboardList, Menu, X, LogOut, ChevronDown, Bell, Settings,
   Church, Sun, Moon, Search, Building2, Package, Users2, Megaphone,
-  GitBranch, Calendar, ChevronRight, MessageSquare, FolderOpen, UserCheck
+  GitBranch, Calendar, ChevronRight, MessageSquare, FolderOpen, UserCheck,
+  User,
 } from 'lucide-react'
 import clsx from 'clsx'
 
@@ -247,6 +248,13 @@ export default function MainLayout({ children }) {
                     <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{user?.name}</p>
                     <p className="text-xs text-gray-400">{user?.email}</p>
                   </div>
+                  <Link
+                    to="/profile"
+                    onClick={() => setUserMenuOpen(false)}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  >
+                    <User className="w-4 h-4" /> My Profile
+                  </Link>
                   <Link
                     to="/settings"
                     onClick={() => setUserMenuOpen(false)}

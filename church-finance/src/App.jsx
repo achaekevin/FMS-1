@@ -7,6 +7,9 @@ import MainLayout from './layouts/MainLayout'
 
 import Login from './pages/Login'
 import Register from './pages/Register'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
+import Profile from './pages/Profile'
 import Dashboard from './pages/Dashboard'
 import Income from './pages/Income'
 import Expenses from './pages/Expenses'
@@ -43,8 +46,11 @@ function App() {
           className: 'dark:bg-gray-800 dark:text-gray-100',
         }} />
         <Routes>
-          <Route path="/login"    element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route path="/login"           element={<Login />} />
+          <Route path="/register"        element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password"  element={<ResetPassword />} />
+          <Route path="/profile"         element={<Protected><Profile /></Protected>} />
 
           <Route path="/dashboard"     element={<Protected><Dashboard /></Protected>} />
           <Route path="/income"        element={<Protected><Income /></Protected>} />

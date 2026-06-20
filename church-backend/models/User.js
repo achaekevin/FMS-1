@@ -40,6 +40,14 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING(255),
     allowNull: true,
   },
+  resetToken: {
+    type: DataTypes.STRING(64),
+    allowNull: true,
+  },
+  resetTokenExpiry: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
 }, {
   tableName: 'users',
   hooks: {
@@ -57,7 +65,7 @@ User.prototype.validatePassword = function (plain) {
 };
 
 User.prototype.toSafeJSON = function () {
-  const { password, ...rest } = this.toJSON();
+  const { password, resetToken, resetTokenExpiry, ...rest } = this.toJSON();
   return rest;
 };
 

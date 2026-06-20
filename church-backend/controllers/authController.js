@@ -1,7 +1,9 @@
 const jwt     = require('jsonwebtoken');
+const crypto  = require('crypto');
 const { User } = require('../models');
 const api      = require('../utils/apiResponse');
 const audit    = require('../services/auditService');
+const emailSvc = require('../services/emailService');
 const logger   = require('../utils/logger');
 
 const signToken = (id) =>
@@ -161,5 +163,77 @@ exports.changePassword = async (req, res) => {
   } catch (err) {
     logger.error('changePassword error:', err);
     return api.error(res);
+  }
+};
+
+/** POST /auth/forgot-password — send reset link */
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ where: { email: email.toLowerCase().trim() } });
+
+    // Always return success to avoid user enumeration
+    if (!user) return api.success(res, null, 'If that email exists, a reset link has been sent.');
+
+    // Generate a secure token (expires in 1 hour)
+    const token     = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
+    await user.update({ resetToken: token, resetTokenExpiry: expiresAt });
+
+    await emailSvc.sendPasswordResetEmail(user, token);
+    await audit.log(user.id, 'UPDATE', 'AUTH', `Password reset requested for ${user.email}`, null, req);
+
+    return api.success(res, null, 'If that email exists, a reset link has been sent.');
+  } catch (err) {
+    logger.error('forgotPassword error:', err);
+    return api.error(res, 'Failed to process request');
+  }
+};
+
+/** POST /auth/reset-password — validate token and set new password */
+exports.resetPassword = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    const user = await User.findOne({ where: { resetToken: token } });
+    if (!user || !user.resetTokenExpiry || user.resetTokenExpiry < new Date())
+      return api.badRequest(res, 'Reset link is invalid or has expired. Please request a new one.');
+
+    await user.update({ password: newPassword, resetToken: null, resetTokenExpiry: null });
+    await audit.log(user.id, 'UPDATE', 'AUTH', `Password reset completed for ${user.email}`, null, req);
+
+    return api.success(res, null, 'Password reset successfully. You can now log in.');
+  } catch (err) {
+    logger.error('resetPassword error:', err);
+    return api.error(res, 'Failed to reset password');
+  }
+};
+
+/** PUT /auth/profile — update name and email */
+exports.updateProfile = async (req, res) => {
+  try {
+    const { name, email } = req.body;
+    const user = await User.findByPk(req.user.id);
+
+    // Check email uniqueness if changing
+    if (email && email.toLowerCase() !== user.email) {
+      const exists = await User.findOne({ where: { email: email.toLowerCase().trim() } });
+      if (exists) return api.conflict(res, 'That email is already in use by another account.');
+    }
+
+    const before = audit.snapshot(user);
+    await user.update({
+      name:  name  ? name.trim()               : user.name,
+      email: email ? email.toLowerCase().trim() : user.email,
+    });
+
+    await audit.log(req.user.id, 'UPDATE', 'AUTH', 'Profile updated', null, req,
+      { before, after: user });
+
+    return api.success(res, user.toSafeJSON(), 'Profile updated successfully');
+  } catch (err) {
+    logger.error('updateProfile error:', err);
+    return api.error(res, 'Failed to update profile');
   }
 };

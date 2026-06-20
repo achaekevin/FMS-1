@@ -66,12 +66,33 @@ export const AuthProvider = ({ children }) => {
     return safeUser
   }, [])
 
+  // ── Change password ────────────────────────────────────────
+  const changePassword = useCallback(async (currentPassword, newPassword) => {
+    const stored = JSON.parse(sessionStorage.getItem('glc_user') || '{}')
+    await axios.put(`${BASE}/auth/change-password`,
+      { currentPassword, newPassword },
+      { headers: { Authorization: `Bearer ${stored.token}` } }
+    )
+  }, [])
+
+  // ── Update profile ─────────────────────────────────────────
+  const updateProfile = useCallback(async ({ name, email }) => {
+    const stored = JSON.parse(sessionStorage.getItem('glc_user') || '{}')
+    const { data } = await axios.put(`${BASE}/auth/profile`,
+      { name, email },
+      { headers: { Authorization: `Bearer ${stored.token}` } }
+    )
+    const updated = { ...stored, ...data.data }
+    setUser(updated)
+    sessionStorage.setItem('glc_user', JSON.stringify(updated))
+    return updated
+  }, [])
+
   const logout = useCallback(() => {
     setUser(null)
     sessionStorage.removeItem('glc_user')
     toast.success('Logged out successfully')
   }, [])
-
   const toggleDarkMode = useCallback(() => setDarkMode(d => !d), [])
 
   const can = useCallback((permission) => {
@@ -104,6 +125,7 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={{
       user, loading, login, register, logout, can, darkMode, toggleDarkMode,
+      changePassword, updateProfile,
     }}>
       {children}
     </AuthContext.Provider>
