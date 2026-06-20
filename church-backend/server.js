@@ -31,4 +31,14 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
+// Friendly message when port is already in use
+process.on('uncaughtException', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    logger.error(`Port ${PORT} is already in use. Run: taskkill /F /IM node.exe  then restart.`);
+    process.exit(1);
+  }
+  logger.error('UNCAUGHT EXCEPTION:', err);
+  process.exit(1);
+});
+
 start();

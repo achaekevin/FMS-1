@@ -22,6 +22,7 @@ const PATH_PERMISSIONS = {
   '/audit':         'audit',
   '/communication': 'manage_communications',
   '/notifications': 'view_notifications',
+  '/visitors':      'manage_visitors',
   '/settings':      'manage_settings',
   '/backup':        'manage_backup',
 }

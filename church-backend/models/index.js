@@ -18,6 +18,8 @@ const Setting          = require('./Setting');
 const Document         = require('./Document');
 const AttendanceSession = require('./AttendanceSession');
 const AttendanceRecord  = require('./AttendanceRecord');
+const Visitor           = require('./Visitor');
+const BaptismRecord     = require('./BaptismRecord');
 
 // ── Income associations ───────────────────────────────────
 Income.belongsTo(Member, { foreignKey: 'memberId',   as: 'member' });
@@ -110,9 +112,24 @@ Member.hasMany(AttendanceRecord,   { foreignKey: 'memberId',  as: 'attendanceRec
 AttendanceRecord.belongsTo(User,   { foreignKey: 'recordedBy', as: 'recorder' });
 User.hasMany(AttendanceRecord,     { foreignKey: 'recordedBy', as: 'recordedAttendance' });
 
+// ── Visitor associations ──────────────────────────────────
+Visitor.belongsTo(User,   { foreignKey: 'recordedBy',        as: 'recorder'  });
+Visitor.belongsTo(User,   { foreignKey: 'assignedCounselor', as: 'counselor' });
+Visitor.belongsTo(Member, { foreignKey: 'memberId',          as: 'member'    });
+User.hasMany(Visitor,     { foreignKey: 'recordedBy',        as: 'recordedVisitors' });
+User.hasMany(Visitor,     { foreignKey: 'assignedCounselor', as: 'assignedVisitors' });
+
+// ── BaptismRecord associations ────────────────────────────
+BaptismRecord.belongsTo(Member,  { foreignKey: 'memberId',   as: 'member'   });
+BaptismRecord.belongsTo(Visitor, { foreignKey: 'visitorId',  as: 'visitor'  });
+BaptismRecord.belongsTo(User,    { foreignKey: 'recordedBy', as: 'recorder' });
+Member.hasMany(BaptismRecord,    { foreignKey: 'memberId',   as: 'baptisms' });
+User.hasMany(BaptismRecord,      { foreignKey: 'recordedBy', as: 'recordedBaptisms' });
+
 module.exports = {
   User, Member, Fund, Income, Expense, AuditLog, MpesaTransaction,
   Notification, Budget, Receipt, Event, Asset, Employee, SalaryRecord,
   Branch, BranchUser, Announcement, Setting, Document,
   AttendanceSession, AttendanceRecord,
+  Visitor, BaptismRecord,
 };
