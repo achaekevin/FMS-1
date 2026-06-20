@@ -74,13 +74,13 @@
   from { opacity: 0; transform: translateY(24px) scale(0.98); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
-.animate-login-rise { animation: loginRise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-login-rise { animation: loginRise 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
 @keyframes fadeSlideUp {
   from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.animate-fade-slide-up { animation: fadeSlideUp 0.5s ease-out both; }
+.animate-fade-slide-up { animation: fadeSlideUp 0.4s ease-out forwards; }
 
 @keyframes logoPop {
   0%   { opacity: 0; transform: scale(0.5) rotate(-8deg); }
