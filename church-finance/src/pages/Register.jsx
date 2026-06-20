@@ -19,10 +19,10 @@ const ROLES = [
 ]
 
 const HIGHLIGHTS = [
-  { icon: Users,    text: 'Member contribution tracking' },
-  { icon: Wallet,   text: 'Multi-fund account management' },
+  { icon: Users,     text: 'Member contribution tracking' },
+  { icon: Wallet,    text: 'Multi-fund account management' },
   { icon: BarChart3, text: 'Real-time financial reports' },
-  { icon: Lock,     text: 'Role-based access control' },
+  { icon: Lock,      text: 'Role-based access control' },
 ]
 
 export default function Register() {
@@ -43,10 +43,10 @@ export default function Register() {
 
   const validate = () => {
     const e = {}
-    if (!form.name.trim())          e.name     = 'Full name is required'
-    if (!form.email.trim())         e.email    = 'Email is required'
+    if (!form.name.trim())         e.name            = 'Full name is required'
+    if (!form.email.trim())        e.email           = 'Email is required'
     else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = 'Enter a valid email'
-    if (form.password.length < 6)   e.password = 'Password must be at least 6 characters'
+    if (form.password.length < 6)  e.password        = 'Password must be at least 6 characters'
     if (form.password !== form.confirmPassword) e.confirmPassword = 'Passwords do not match'
     setErrors(e)
     return Object.keys(e).length === 0
@@ -76,17 +76,17 @@ export default function Register() {
       {/* ── LEFT PANEL ──────────────────────────────────── */}
       <div className="hidden lg:flex lg:w-[45%] xl:w-[50%] relative flex-col bg-brand-950 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="animate-orb-1 absolute -top-32 -left-32 w-96 h-96 bg-brand-700/40 rounded-full blur-3xl" />
-          <div className="animate-orb-2 absolute top-1/2 -right-24 w-80 h-80 bg-gold-500/15 rounded-full blur-3xl" />
-          <div className="animate-orb-3 absolute -bottom-32 left-1/3 w-96 h-96 bg-brand-600/30 rounded-full blur-3xl" />
+          <div className="absolute -top-32 -left-32 w-96 h-96 bg-brand-700/40 rounded-full blur-3xl" />
+          <div className="absolute top-1/2 -right-24 w-80 h-80 bg-gold-500/15 rounded-full blur-3xl" />
+          <div className="absolute -bottom-32 left-1/3 w-96 h-96 bg-brand-600/30 rounded-full blur-3xl" />
         </div>
-        <div className="absolute inset-0 opacity-[0.04]" style={{
+        <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{
           backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
           backgroundSize: '28px 28px',
         }} />
 
         <div className="relative flex flex-col h-full px-12 xl:px-16 py-10">
-          <div className="flex items-center gap-3 animate-fade-slide-up">
+          <div className="flex items-center gap-3">
             <div className="w-11 h-11 bg-gold-500 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
               <Church className="w-6 h-6 text-brand-950" />
             </div>
@@ -96,7 +96,7 @@ export default function Register() {
             </div>
           </div>
 
-          <div className="mt-16 xl:mt-20 animate-fade-slide-up" style={{ animationDelay: '100ms' }}>
+          <div className="mt-16 xl:mt-20">
             <p className="text-gold-400 text-sm font-semibold uppercase tracking-widest mb-3">Get Started</p>
             <h1 className="text-4xl xl:text-5xl font-bold text-white leading-tight">
               Join the<br />
@@ -108,7 +108,7 @@ export default function Register() {
             </p>
           </div>
 
-          <div className="mt-10 space-y-3 animate-fade-slide-up" style={{ animationDelay: '200ms' }}>
+          <div className="mt-10 space-y-3">
             {HIGHLIGHTS.map(h => {
               const Icon = h.icon
               return (
@@ -122,7 +122,7 @@ export default function Register() {
             })}
           </div>
 
-          <div className="mt-auto pt-8 text-brand-500 text-xs animate-fade-slide-up" style={{ animationDelay: '300ms' }}>
+          <div className="mt-auto pt-8 text-brand-500 text-xs">
             © {new Date().getFullYear()} {CHURCH_NAME} · {CHURCH_ADDRESS}
           </div>
         </div>
@@ -130,15 +130,15 @@ export default function Register() {
 
       {/* ── RIGHT PANEL ─────────────────────────────────── */}
       <div className="flex-1 flex flex-col bg-gray-50 relative overflow-hidden">
-        <div className="lg:hidden absolute inset-0 bg-gradient-to-br from-brand-950 via-brand-900 to-brand-800" />
+        <div className="lg:hidden absolute inset-0 bg-gradient-to-br from-brand-950 via-brand-900 to-brand-800 pointer-events-none" />
         <div className="lg:hidden absolute inset-0 pointer-events-none">
-          <div className="animate-orb-1 absolute -top-20 -left-20 w-72 h-72 bg-brand-500/20 rounded-full blur-3xl" />
-          <div className="animate-orb-2 absolute top-1/3 -right-16 w-64 h-64 bg-gold-500/10 rounded-full blur-3xl" />
+          <div className="absolute -top-20 -left-20 w-72 h-72 bg-brand-500/20 rounded-full blur-3xl" />
+          <div className="absolute top-1/3 -right-16 w-64 h-64 bg-gold-500/10 rounded-full blur-3xl" />
         </div>
 
         {/* Mobile logo */}
         <div className="lg:hidden relative z-10 flex items-center justify-center pt-10 pb-4">
-          <div className="flex items-center gap-3 animate-fade-slide-up">
+          <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gold-500 rounded-xl flex items-center justify-center shadow-lg">
               <Church className="w-5 h-5 text-brand-950" />
             </div>
@@ -150,7 +150,7 @@ export default function Register() {
         </div>
 
         <div className="relative z-10 flex-1 flex items-center justify-center px-5 sm:px-10 lg:px-14 xl:px-20 py-6">
-          <div className={clsx('w-full max-w-md animate-login-rise', shake && 'animate-shake')}>
+          <div className={clsx('w-full max-w-md', shake && 'animate-shake')}>
             <div className="bg-white lg:shadow-xl rounded-2xl lg:rounded-3xl overflow-hidden">
 
               {/* Card header */}
@@ -180,7 +180,7 @@ export default function Register() {
                     <input
                       type="text"
                       className={clsx(
-                        'w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all bg-gray-50 hover:bg-white focus:bg-white',
+                        'w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-gray-50 hover:bg-white focus:bg-white transition-colors',
                         errors.name ? 'border-red-400' : 'border-gray-200'
                       )}
                       placeholder="John Kamau"
@@ -197,10 +197,10 @@ export default function Register() {
                     <input
                       type="email"
                       className={clsx(
-                        'w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all bg-gray-50 hover:bg-white focus:bg-white',
+                        'w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-gray-50 hover:bg-white focus:bg-white transition-colors',
                         errors.email ? 'border-red-400' : 'border-gray-200'
                       )}
-                      placeholder="you@gracelife.org"
+                      placeholder="you@example.com"
                       value={form.email}
                       onChange={e => set('email', e.target.value)}
                       autoComplete="email"
@@ -215,7 +215,7 @@ export default function Register() {
                       {ROLES.map(r => (
                         <label key={r.value}
                           className={clsx(
-                            'flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all',
+                            'flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors',
                             form.role === r.value
                               ? 'border-brand-400 bg-brand-50'
                               : 'border-gray-200 bg-gray-50 hover:bg-white hover:border-gray-300'
@@ -243,7 +243,7 @@ export default function Register() {
                       <input
                         type={showPassword ? 'text' : 'password'}
                         className={clsx(
-                          'w-full border rounded-xl px-4 py-3 pr-11 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all bg-gray-50 hover:bg-white focus:bg-white',
+                          'w-full border rounded-xl px-4 py-3 pr-11 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-gray-50 hover:bg-white focus:bg-white transition-colors',
                           errors.password ? 'border-red-400' : 'border-gray-200'
                         )}
                         placeholder="Min 6 characters"
@@ -251,7 +251,7 @@ export default function Register() {
                         onChange={e => set('password', e.target.value)}
                         autoComplete="new-password"
                       />
-                      <button type="button" onClick={() => setShowPassword(!showPassword)}
+                      <button type="button" onClick={() => setShowPassword(v => !v)}
                         className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-0.5">
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
@@ -266,7 +266,7 @@ export default function Register() {
                       <input
                         type={showConfirm ? 'text' : 'password'}
                         className={clsx(
-                          'w-full border rounded-xl px-4 py-3 pr-11 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all bg-gray-50 hover:bg-white focus:bg-white',
+                          'w-full border rounded-xl px-4 py-3 pr-11 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-gray-50 hover:bg-white focus:bg-white transition-colors',
                           errors.confirmPassword ? 'border-red-400' : 'border-gray-200'
                         )}
                         placeholder="Repeat your password"
@@ -274,7 +274,7 @@ export default function Register() {
                         onChange={e => set('confirmPassword', e.target.value)}
                         autoComplete="new-password"
                       />
-                      <button type="button" onClick={() => setShowConfirm(!showConfirm)}
+                      <button type="button" onClick={() => setShowConfirm(v => !v)}
                         className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-0.5">
                         {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
@@ -288,25 +288,18 @@ export default function Register() {
                       type="submit"
                       disabled={loading || success}
                       className={clsx(
-                        'relative w-full overflow-hidden text-white font-semibold py-3 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 text-sm',
-                        success
-                          ? 'bg-green-500'
-                          : 'bg-brand-600 hover:bg-brand-700 active:scale-[0.98] shadow-md shadow-brand-500/30 hover:shadow-lg hover:shadow-brand-500/40',
-                        'disabled:opacity-80'
+                        'w-full text-white font-semibold py-3 rounded-xl transition-colors duration-200 flex items-center justify-center gap-2 text-sm',
+                        success  ? 'bg-green-500' : 'bg-brand-600 hover:bg-brand-700',
+                        (loading || success) && 'opacity-80 cursor-not-allowed'
                       )}
                     >
-                      {!loading && !success && <span className="absolute inset-0 animate-shimmer" />}
-                      <span className="relative flex items-center gap-2">
-                        {success ? (
-                          <span className="flex items-center gap-2">
-                            <CheckCircle2 className="w-4 h-4" /> Account created!
-                          </span>
-                        ) : loading ? (
-                          <><Loader2 className="w-4 h-4 animate-spin" /> Creating account…</>
-                        ) : (
-                          <><UserPlus className="w-4 h-4" /> Create Account</>
-                        )}
-                      </span>
+                      {success ? (
+                        <><CheckCircle2 className="w-4 h-4" /> Account created!</>
+                      ) : loading ? (
+                        <><Loader2 className="w-4 h-4 animate-spin" /> Creating account…</>
+                      ) : (
+                        <><UserPlus className="w-4 h-4" /> Create Account</>
+                      )}
                     </button>
                   </div>
                 </form>
