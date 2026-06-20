@@ -32,16 +32,15 @@ export default function Register() {
   const [form, setForm] = useState({
     name: '', email: '', password: '', confirmPassword: '', role: 'treasurer',
   })
-  const [showPassword, setShowPassword]         = useState(false)
-  const [showConfirm,  setShowConfirm]           = useState(false)
-  const [loading,  setLoading]   = useState(false)
-  const [success,  setSuccess]   = useState(false)
-  const [shake,    setShake]     = useState(false)
-  const [errors,   setErrors]    = useState({})
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirm,  setShowConfirm]  = useState(false)
+  const [loading,  setLoading]  = useState(false)
+  const [success,  setSuccess]  = useState(false)
+  const [shake,    setShake]    = useState(false)
+  const [errors,   setErrors]   = useState({})
 
   const set = (k, v) => { setForm(p => ({ ...p, [k]: v })); setErrors(p => ({ ...p, [k]: '' })) }
 
-  // ── Client-side validation ───────────────────────────────
   const validate = () => {
     const e = {}
     if (!form.name.trim())          e.name     = 'Full name is required'
@@ -74,10 +73,8 @@ export default function Register() {
   return (
     <div className="min-h-screen w-full flex overflow-hidden">
 
-      {/* ── LEFT PANEL ────────────────────────────────────── */}
+      {/* ── LEFT PANEL ──────────────────────────────────── */}
       <div className="hidden lg:flex lg:w-[45%] xl:w-[50%] relative flex-col bg-brand-950 overflow-hidden">
-
-        {/* Background orbs */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="animate-orb-1 absolute -top-32 -left-32 w-96 h-96 bg-brand-700/40 rounded-full blur-3xl" />
           <div className="animate-orb-2 absolute top-1/2 -right-24 w-80 h-80 bg-gold-500/15 rounded-full blur-3xl" />
@@ -89,7 +86,6 @@ export default function Register() {
         }} />
 
         <div className="relative flex flex-col h-full px-12 xl:px-16 py-10">
-          {/* Logo */}
           <div className="flex items-center gap-3 animate-fade-slide-up">
             <div className="w-11 h-11 bg-gold-500 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
               <Church className="w-6 h-6 text-brand-950" />
@@ -100,7 +96,6 @@ export default function Register() {
             </div>
           </div>
 
-          {/* Hero */}
           <div className="mt-16 xl:mt-20 animate-fade-slide-up" style={{ animationDelay: '100ms' }}>
             <p className="text-gold-400 text-sm font-semibold uppercase tracking-widest mb-3">Get Started</p>
             <h1 className="text-4xl xl:text-5xl font-bold text-white leading-tight">
@@ -113,7 +108,6 @@ export default function Register() {
             </p>
           </div>
 
-          {/* Feature list */}
           <div className="mt-10 space-y-3 animate-fade-slide-up" style={{ animationDelay: '200ms' }}>
             {HIGHLIGHTS.map(h => {
               const Icon = h.icon
@@ -134,10 +128,8 @@ export default function Register() {
         </div>
       </div>
 
-      {/* ── RIGHT PANEL ───────────────────────────────────── */}
+      {/* ── RIGHT PANEL ─────────────────────────────────── */}
       <div className="flex-1 flex flex-col bg-gray-50 relative overflow-hidden">
-
-        {/* Mobile background */}
         <div className="lg:hidden absolute inset-0 bg-gradient-to-br from-brand-950 via-brand-900 to-brand-800" />
         <div className="lg:hidden absolute inset-0 pointer-events-none">
           <div className="animate-orb-1 absolute -top-20 -left-20 w-72 h-72 bg-brand-500/20 rounded-full blur-3xl" />
@@ -157,12 +149,11 @@ export default function Register() {
           </div>
         </div>
 
-        {/* Form */}
         <div className="relative z-10 flex-1 flex items-center justify-center px-5 sm:px-10 lg:px-14 xl:px-20 py-6">
           <div className={clsx('w-full max-w-md animate-login-rise', shake && 'animate-shake')}>
             <div className="bg-white lg:shadow-xl rounded-2xl lg:rounded-3xl overflow-hidden">
 
-              {/* Card header — desktop */}
+              {/* Card header */}
               <div className="hidden lg:block bg-brand-950 px-8 py-5">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-gold-500 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
@@ -175,7 +166,6 @@ export default function Register() {
                 </div>
               </div>
 
-              {/* Form body */}
               <div className="px-7 sm:px-8 pt-7 pb-8">
                 <div className="mb-6 animate-fade-slide-up" style={{ animationDelay: '150ms' }}>
                   <h2 className="text-2xl font-bold text-gray-900">Create Account</h2>
@@ -321,7 +311,6 @@ export default function Register() {
                   </div>
                 </form>
 
-                {/* Sign in link */}
                 <div className="mt-5 space-y-3">
                   <div className="flex items-center gap-2 justify-center">
                     <Shield className="w-3.5 h-3.5 text-gray-300" />
@@ -337,14 +326,12 @@ export default function Register() {
               </div>
             </div>
 
-            {/* Mobile footer */}
             <p className="lg:hidden text-center text-brand-400 text-xs mt-5">
               © {new Date().getFullYear()} {CHURCH_NAME} · {CHURCH_ADDRESS}
             </p>
           </div>
         </div>
 
-        {/* Desktop bottom bar */}
         <div className="hidden lg:flex items-center justify-between px-14 xl:px-20 py-4 border-t border-gray-100 text-xs text-gray-400 flex-shrink-0">
           <span>{CHURCH_NAME} · {CHURCH_ADDRESS}</span>
           <span>© {new Date().getFullYear()} · All rights reserved</span>

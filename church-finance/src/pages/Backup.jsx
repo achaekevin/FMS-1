@@ -7,7 +7,7 @@ import clsx from 'clsx'
 import {
   Database, Download, Upload, Plus, CheckCircle2, Clock, Trash2,
   RefreshCw, Loader2, Shield, AlertTriangle, Calendar, Settings2,
-  HardDrive, RotateCcw, History, Zap, Info, CloudUpload,
+  HardDrive, RotateCcw, History, Zap, Info,
 } from 'lucide-react'
 
 // ─── Helpers ──────────────────────────────────────────────

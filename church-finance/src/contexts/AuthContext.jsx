@@ -14,7 +14,7 @@ export const useAuth = () => {
 }
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser]     = useState(null)
+  const [user, setUser]       = useState(null)
   const [loading, setLoading] = useState(true)
   const [darkMode, setDarkMode] = useState(() => {
     try { return localStorage.getItem('glc_dark_mode') === 'true' } catch { return false }
@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('glc_dark_mode', String(darkMode))
   }, [darkMode])
 
-  // ── Login — tries real backend first, falls back to mock ──
+  // ── Login ─────────────────────────────────────────────────
   const login = useCallback(async (email, password) => {
     try {
       const { data } = await axios.post(`${BASE}/auth/login`, { email, password })
@@ -43,13 +43,10 @@ export const AuthProvider = ({ children }) => {
       sessionStorage.setItem('glc_user', JSON.stringify(safeUser))
       return safeUser
     } catch (backendErr) {
-      // Backend unreachable or returned error — try mock users as fallback
       const msg = backendErr.response?.data?.message
-      if (backendErr.response) {
-        // Backend responded with an error (wrong password, inactive, etc.)
-        throw new Error(msg || 'Invalid email or password')
-      }
-      // Network error — fall back to mock data so the app still works offline
+      if (backendErr.response) throw new Error(msg || 'Invalid email or password')
+
+      // Network error — mock fallback (staff only)
       await new Promise(r => setTimeout(r, 600))
       const found = USERS.find(u => u.email === email && u.password === password)
       if (!found) throw new Error('Invalid email or password')
@@ -60,7 +57,7 @@ export const AuthProvider = ({ children }) => {
     }
   }, [])
 
-  // ── Register — calls real backend ────────────────────────
+  // ── Register ──────────────────────────────────────────────
   const register = useCallback(async ({ name, email, password, role }) => {
     const { data } = await axios.post(`${BASE}/auth/register`, { name, email, password, role })
     const safeUser = { ...data.data.user, token: data.data.token }
@@ -89,7 +86,9 @@ export const AuthProvider = ({ children }) => {
   }, [user])
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, can, darkMode, toggleDarkMode }}>
+    <AuthContext.Provider value={{
+      user, loading, login, register, logout, can, darkMode, toggleDarkMode,
+    }}>
       {children}
     </AuthContext.Provider>
   )

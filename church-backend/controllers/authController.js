@@ -41,10 +41,10 @@ exports.register = async (req, res) => {
     if (exists) return api.conflict(res, 'Email is already registered');
 
     const user = await User.create({
-      name: name.trim(),
-      email: email.toLowerCase().trim(),
+      name:   name.trim(),
+      email:  email.toLowerCase().trim(),
       password,
-      role: role || 'treasurer',
+      role:   ['administrator','pastor','treasurer'].includes(role) ? role : 'treasurer',
       status: 'active',
     });
 

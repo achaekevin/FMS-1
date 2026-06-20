@@ -38,9 +38,9 @@ const authorize = (...roles) => (req, res, next) => {
 };
 
 // Convenience role guards
-const adminOnly      = authorize('administrator');
-const adminOrPastor  = authorize('administrator', 'pastor');
+const adminOnly        = authorize('administrator');
+const adminOrPastor    = authorize('administrator', 'pastor');
 const adminOrTreasurer = authorize('administrator', 'treasurer');
-const allRoles       = authorize('administrator', 'pastor', 'treasurer');
+const allRoles         = authorize('administrator', 'pastor', 'treasurer');
 
 module.exports = { authenticate, authorize, adminOnly, adminOrPastor, adminOrTreasurer, allRoles };
