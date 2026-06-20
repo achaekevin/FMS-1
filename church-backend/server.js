@@ -3,6 +3,7 @@ const app = require('./app');
 const { sequelize, connectDB } = require('./config/sequelize');
 require('./models'); // load associations
 const logger = require('./utils/logger');
+require('./services/schedulerService'); // start auto-backup scheduler
 
 const PORT = process.env.PORT || 5000;
 
