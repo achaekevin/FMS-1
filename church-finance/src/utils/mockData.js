@@ -12,9 +12,9 @@ export const CHURCH_CURRENCY = 'KES'
 export const CHURCH_FISCAL_YEAR = 'January - December'
 
 export const USERS = [
-  { id: 1, name: 'David Kamau', email: 'admin@gracelife.org', password: 'GLC@Admin2024!', role: 'administrator', avatar: 'DK' },
-  { id: 2, name: 'Rev. James Mwangi', email: 'pastor@gracelife.org', password: 'GLC@Pastor2024!', role: 'pastor', avatar: 'JM' },
-  { id: 3, name: 'Sarah Achieng', email: 'treasurer@gracelife.org', password: 'GLC@Treasurer2024!', role: 'treasurer', avatar: 'SA' },
+  { id: 1, name: 'Administrator', email: 'admin@ktpag.org',     password: 'admin123',     role: 'administrator', avatar: 'AD' },
+  { id: 5, name: 'Pastor',        email: 'pastor@ktpag.org',    password: 'pastor123',    role: 'pastor',        avatar: 'PS' },
+  { id: 6, name: 'Treasurer',     email: 'treasurer@ktpag.org', password: 'treasurer123', role: 'treasurer',     avatar: 'TR' },
 ]
 
 export const MEMBERS = []

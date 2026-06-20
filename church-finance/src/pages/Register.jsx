@@ -167,7 +167,7 @@ export default function Register() {
               </div>
 
               <div className="px-7 sm:px-8 pt-7 pb-8">
-                <div className="mb-6 animate-fade-slide-up" style={{ animationDelay: '150ms' }}>
+                <div className="mb-6">
                   <h2 className="text-2xl font-bold text-gray-900">Create Account</h2>
                   <p className="text-sm text-gray-400 mt-1">Fill in your details to get started</p>
                 </div>
@@ -175,7 +175,7 @@ export default function Register() {
                 <form onSubmit={handleSubmit} className="space-y-4">
 
                   {/* Full Name */}
-                  <div className="animate-fade-slide-up" style={{ animationDelay: '180ms' }}>
+                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">Full Name</label>
                     <input
                       type="text"
@@ -192,7 +192,7 @@ export default function Register() {
                   </div>
 
                   {/* Email */}
-                  <div className="animate-fade-slide-up" style={{ animationDelay: '210ms' }}>
+                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">Email Address</label>
                     <input
                       type="email"
@@ -209,7 +209,7 @@ export default function Register() {
                   </div>
 
                   {/* Role */}
-                  <div className="animate-fade-slide-up" style={{ animationDelay: '230ms' }}>
+                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
                     <div className="space-y-2">
                       {ROLES.map(r => (
@@ -237,7 +237,7 @@ export default function Register() {
                   </div>
 
                   {/* Password */}
-                  <div className="animate-fade-slide-up" style={{ animationDelay: '260ms' }}>
+                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
                     <div className="relative">
                       <input
@@ -260,7 +260,7 @@ export default function Register() {
                   </div>
 
                   {/* Confirm Password */}
-                  <div className="animate-fade-slide-up" style={{ animationDelay: '280ms' }}>
+                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirm Password</label>
                     <div className="relative">
                       <input
@@ -283,7 +283,7 @@ export default function Register() {
                   </div>
 
                   {/* Submit */}
-                  <div className="pt-1 animate-fade-slide-up" style={{ animationDelay: '310ms' }}>
+                  <div className="pt-1">
                     <button
                       type="submit"
                       disabled={loading || success}

@@ -178,13 +178,13 @@ export default function Login() {
 
               {/* Form body */}
               <div className="px-7 sm:px-8 pt-7 pb-8 lg:pt-8">
-                <div className="mb-7 animate-fade-slide-up" style={{ animationDelay: '150ms' }}>
+                <div className="mb-7">
                   <h2 className="text-2xl font-bold text-gray-900">Sign In</h2>
                   <p className="text-sm text-gray-400 mt-1">Enter your credentials to access the system</p>
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-5">
                   {/* Email */}
-                  <div className="animate-fade-slide-up" style={{ animationDelay: '200ms' }}>
+                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">
                       Email Address
                     </label>
@@ -200,7 +200,7 @@ export default function Login() {
                   </div>
 
                   {/* Password */}
-                  <div className="animate-fade-slide-up" style={{ animationDelay: '250ms' }}>
+                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">
                       Password
                     </label>
@@ -225,7 +225,7 @@ export default function Login() {
                   </div>
 
                   {/* Submit */}
-                  <div className="pt-1 animate-fade-slide-up" style={{ animationDelay: '300ms' }}>
+                  <div className="pt-1">
                     <button
                       type="submit"
                       disabled={loading || success}
@@ -256,13 +256,33 @@ export default function Login() {
                 </form>
 
                 {/* Security note */}
-                <div className="mt-6 flex items-center gap-2 justify-center animate-fade-slide-up" style={{ animationDelay: '380ms' }}>
+                <div className="mt-6 flex items-center gap-2 justify-center">
                   <Shield className="w-3.5 h-3.5 text-gray-300" />
                   <p className="text-xs text-gray-400">Secured with role-based access control</p>
                 </div>
 
+                {/* Dev credentials hint */}
+                {import.meta.env.DEV && (
+                  <div className="mt-4 p-3 bg-gray-50 rounded-xl border border-gray-100 text-xs text-gray-500 space-y-1">
+                    <p className="font-semibold text-gray-600 mb-1.5">Demo credentials:</p>
+                    {[
+                      { role: 'Admin',     email: 'admin@ktpag.org',     pwd: 'admin123'     },
+                      { role: 'Pastor',    email: 'pastor@ktpag.org',    pwd: 'pastor123'    },
+                      { role: 'Treasurer', email: 'treasurer@ktpag.org', pwd: 'treasurer123' },
+                    ].map(c => (
+                      <button key={c.role} type="button"
+                        onClick={() => setForm({ email: c.email, password: c.pwd })}
+                        className="w-full flex items-center justify-between px-2 py-1 rounded-lg hover:bg-white hover:border-gray-200 border border-transparent transition-colors text-left group">
+                        <span className="font-medium text-gray-700 group-hover:text-brand-700">{c.role}</span>
+                        <span className="text-gray-400 font-mono">{c.email}</span>
+                      </button>
+                    ))}
+                    <p className="text-gray-400 text-center pt-1">Click a row to auto-fill</p>
+                  </div>
+                )}
+
                 {/* Sign up link */}
-                <p className="mt-5 text-center text-sm text-gray-400 animate-fade-slide-up" style={{ animationDelay: '420ms' }}>
+                <p className="mt-5 text-center text-sm text-gray-400">
                   Don't have an account?{' '}
                   <Link to="/register" className="text-brand-600 font-semibold hover:text-brand-700 hover:underline transition-colors">
                     Create one
@@ -272,7 +292,7 @@ export default function Login() {
             </div>
 
             {/* Mobile footer */}
-            <p className="lg:hidden text-center text-brand-400 text-xs mt-5 animate-fade-slide-up" style={{ animationDelay: '420ms' }}>
+            <p className="lg:hidden text-center text-brand-400 text-xs mt-5">
               © {new Date().getFullYear()} {CHURCH_NAME} · {CHURCH_ADDRESS}
             </p>
           </div>
