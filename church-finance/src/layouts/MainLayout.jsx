@@ -10,7 +10,7 @@ import {
   Phone, ClipboardList, Menu, X, LogOut, ChevronDown, Bell, Settings,
   Church, Sun, Moon, Search, Building2, Package, Users2, Megaphone,
   GitBranch, Calendar, ChevronRight, MessageSquare, FolderOpen, UserCheck,
-  User, Heart,
+  User, Heart, HandHeart,
 } from 'lucide-react'
 import clsx from 'clsx'
 
@@ -33,6 +33,7 @@ const navSections = [
       { path: '/events',        label: 'Events',        icon: Calendar,   permission: 'view_events'        },
       { path: '/attendance',    label: 'Attendance',    icon: UserCheck,  permission: 'view_attendance'    },
       { path: '/visitors',      label: 'Visitors',      icon: Heart,      permission: 'manage_visitors'    },
+      { path: '/prayer-requests', label: 'Prayer Requests', icon: HandHeart,  permission: 'view_prayer_requests' },
       { path: '/assets',        label: 'Assets',        icon: Package,    permission: 'manage_assets'      },
       { path: '/payroll',       label: 'Payroll',       icon: Users2,     permission: 'manage_payroll'     },
       { path: '/branches',      label: 'Branches',      icon: GitBranch,  permission: 'manage_branches'    },

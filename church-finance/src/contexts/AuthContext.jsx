@@ -103,6 +103,7 @@ export const AuthProvider = ({ children }) => {
         'view_dashboard','view_income','view_expense','approve_expense',
         'view_members','view_reports','view_funds',
         'view_events','view_attendance','view_announcements','view_notifications',
+        'view_prayer_requests',
       ],
       treasurer: [
         'view_dashboard','manage_income','manage_expense',
@@ -117,6 +118,7 @@ export const AuthProvider = ({ children }) => {
         'manage_documents','manage_communications',
         'view_notifications',
         'manage_visitors',
+        'view_prayer_requests',
       ],
     }
     const userPerms = perms[user.role] || []

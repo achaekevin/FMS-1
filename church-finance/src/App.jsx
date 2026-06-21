@@ -31,6 +31,7 @@ import Communication from './pages/Communication'
 import Documents from './pages/Documents'
 import Attendance from './pages/Attendance'
 import Visitors from './pages/Visitors'
+import PrayerRequests from './pages/PrayerRequests'
 
 const Protected = ({ children }) => (
   <ProtectedRoute>
@@ -72,6 +73,7 @@ function App() {
           <Route path="/documents"       element={<Protected><Documents /></Protected>} />
           <Route path="/attendance"      element={<Protected><Attendance /></Protected>} />
           <Route path="/visitors"       element={<Protected><Visitors /></Protected>} />
+          <Route path="/prayer-requests" element={<Protected><PrayerRequests /></Protected>} />
           <Route path="/settings"        element={<Protected><Settings /></Protected>} />
           <Route path="/backup"          element={<Protected><Backup /></Protected>} />
 
