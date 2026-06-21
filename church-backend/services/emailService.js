@@ -15,9 +15,6 @@ const getTransporter = () => {
 
 const FROM = `"${process.env.CHURCH_NAME || 'Grace Life Church'}" <${process.env.SMTP_USER}>`;
 
-/**
- * Send a plain email
- */
 const send = async ({ to, subject, html, text }) => {
   try {
     if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
@@ -34,9 +31,6 @@ const send = async ({ to, subject, html, text }) => {
   }
 };
 
-/**
- * Send donation/receipt confirmation email
- */
 const sendReceiptEmail = async (member, receipt) => {
   const html = `
     <div style="font-family:sans-serif;max-width:500px;margin:auto;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden">
@@ -63,9 +57,6 @@ const sendReceiptEmail = async (member, receipt) => {
   return send({ to: member.email, subject: `Donation Receipt — ${receipt.receiptNumber}`, html });
 };
 
-/**
- * Send password reset email
- */
 const sendPasswordResetEmail = async (user, resetToken) => {
   const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${resetToken}`;
   const html = `
@@ -79,9 +70,6 @@ const sendPasswordResetEmail = async (user, resetToken) => {
   return send({ to: user.email, subject: 'Password Reset — Grace Life Church FMS', html });
 };
 
-/**
- * Send payment confirmation (M-Pesa)
- */
 const sendPaymentConfirmation = async (member, transaction) => {
   const html = `
     <div style="font-family:sans-serif;max-width:480px;margin:auto">
@@ -98,9 +86,6 @@ const sendPaymentConfirmation = async (member, transaction) => {
   return send({ to: member.email, subject: 'M-Pesa Payment Confirmed', html });
 };
 
-/**
- * Send announcement email
- */
 const sendAnnouncementEmail = async (recipient, announcement) => {
   const priorityColor = { High: '#dc2626', Medium: '#d97706', Low: '#059669' };
   const color = priorityColor[announcement.priority] || '#4f4fe8';
@@ -123,10 +108,6 @@ const sendAnnouncementEmail = async (recipient, announcement) => {
   return send({ to: recipient.email, subject: `📢 ${announcement.title}`, html });
 };
 
-/**
- * Send member financial statement email (with summary data object)
- * statement: { period, totalDonations, lastDonation, donationCount, items[] }
- */
 const sendStatementEmail = async (member, statement) => {
   const rows = (statement.items || []).map((item, i) => `
     <tr style="background:${i % 2 === 0 ? '#f9fafb' : '#fff'}">

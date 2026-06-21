@@ -2,9 +2,6 @@ const { Fund } = require('../models');
 const { sequelize } = require('../config/sequelize');
 const logger = require('../utils/logger');
 
-/**
- * Credit a fund when income is recorded
- */
 const creditFund = async (fundId, amount, transaction = null) => {
   if (!fundId) return;
   try {
@@ -18,9 +15,6 @@ const creditFund = async (fundId, amount, transaction = null) => {
   }
 };
 
-/**
- * Debit a fund when expense is recorded
- */
 const debitFund = async (fundId, amount, transaction = null) => {
   if (!fundId) return;
   try {
@@ -39,9 +33,6 @@ const debitFund = async (fundId, amount, transaction = null) => {
   }
 };
 
-/**
- * Reverse a credit (on income delete)
- */
 const reverseCreditFund = async (fundId, amount, transaction = null) => {
   if (!fundId) return;
   await Fund.increment(
@@ -50,9 +41,6 @@ const reverseCreditFund = async (fundId, amount, transaction = null) => {
   );
 };
 
-/**
- * Reverse a debit (on expense delete)
- */
 const reverseDebitFund = async (fundId, amount, transaction = null) => {
   if (!fundId) return;
   await Fund.increment(
