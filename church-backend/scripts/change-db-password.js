@@ -1,7 +1,3 @@
-/**
- * Run: node scripts/change-db-password.js
- * Changes the MySQL root password and updates .env
- */
 require('dotenv').config();
 const mysql = require('mysql2/promise');
 const fs    = require('fs');

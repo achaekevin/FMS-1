@@ -20,6 +20,7 @@ const AttendanceSession = require('./AttendanceSession');
 const AttendanceRecord  = require('./AttendanceRecord');
 const Visitor           = require('./Visitor');
 const BaptismRecord     = require('./BaptismRecord');
+const PrayerRequest     = require('./PrayerRequest');
 
 // ── Income associations ───────────────────────────────────
 Income.belongsTo(Member, { foreignKey: 'memberId',   as: 'member' });
@@ -126,10 +127,18 @@ BaptismRecord.belongsTo(User,    { foreignKey: 'recordedBy', as: 'recorder' });
 Member.hasMany(BaptismRecord,    { foreignKey: 'memberId',   as: 'baptisms' });
 User.hasMany(BaptismRecord,      { foreignKey: 'recordedBy', as: 'recordedBaptisms' });
 
+// ── PrayerRequest associations ────────────────────────────
+PrayerRequest.belongsTo(Member, { foreignKey: 'memberId',    as: 'member'    });
+PrayerRequest.belongsTo(User,   { foreignKey: 'submittedBy', as: 'submitter' });
+PrayerRequest.belongsTo(User,   { foreignKey: 'assignedTo',  as: 'assignee'  });
+Member.hasMany(PrayerRequest,   { foreignKey: 'memberId',    as: 'prayerRequests' });
+User.hasMany(PrayerRequest,     { foreignKey: 'submittedBy', as: 'submittedPrayerRequests' });
+User.hasMany(PrayerRequest,     { foreignKey: 'assignedTo',  as: 'assignedPrayerRequests' });
+
 module.exports = {
   User, Member, Fund, Income, Expense, AuditLog, MpesaTransaction,
   Notification, Budget, Receipt, Event, Asset, Employee, SalaryRecord,
   Branch, BranchUser, Announcement, Setting, Document,
   AttendanceSession, AttendanceRecord,
-  Visitor, BaptismRecord,
+  Visitor, BaptismRecord, PrayerRequest,
 };

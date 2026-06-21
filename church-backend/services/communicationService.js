@@ -1,19 +1,8 @@
-/**
- * communicationService.js
- *
- * Unified orchestrator — decides which channels (SMS / Email / WhatsApp)
- * to use for each communication event and fires them all concurrently.
- * Every call is fire-and-forget safe: failures are logged, never thrown.
- */
 const logger  = require('../utils/logger');
 const smsSvc  = require('./smsService');
 const emailSvc = require('./emailService');
 const waSvc   = require('./whatsappService');
 
-/**
- * Internal helper — runs a list of promises concurrently, swallows individual
- * failures so one bad channel doesn't block the others.
- */
 const fireAll = async (label, tasks) => {
   const results = await Promise.allSettled(tasks);
   results.forEach((r, i) => {
@@ -22,11 +11,6 @@ const fireAll = async (label, tasks) => {
   });
 };
 
-// ─────────────────────────────────────────────────────────
-// DONATION CONFIRMATION
-// Triggered when a receipt is generated.
-// Channels: SMS + Email + WhatsApp
-// ─────────────────────────────────────────────────────────
 const sendDonationConfirmation = async ({ member, receipt }) => {
   const tasks = [];
 
@@ -42,11 +26,6 @@ const sendDonationConfirmation = async ({ member, receipt }) => {
   await fireAll('DonationConfirmation', tasks);
 };
 
-// ─────────────────────────────────────────────────────────
-// EVENT REMINDER
-// Triggered manually or by the cron job in scheduler.js.
-// Channels: SMS + WhatsApp
-// ─────────────────────────────────────────────────────────
 const sendEventReminder = async ({ member, event }) => {
   const eventDate = new Date(event.eventDate).toLocaleDateString('en-KE', { dateStyle: 'full' });
   const tasks     = [];
@@ -59,11 +38,6 @@ const sendEventReminder = async ({ member, event }) => {
   await fireAll('EventReminder', tasks);
 };
 
-// ─────────────────────────────────────────────────────────
-// PAYMENT CONFIRMATION (M-Pesa)
-// Triggered after M-Pesa callback is processed.
-// Channels: SMS + WhatsApp + Email
-// ─────────────────────────────────────────────────────────
 const sendPaymentConfirmation = async ({ member, transaction }) => {
   const ref   = transaction.mpesaReceiptNumber || transaction.reference || transaction.id;
   const tasks = [];
@@ -78,11 +52,6 @@ const sendPaymentConfirmation = async ({ member, transaction }) => {
   await fireAll('PaymentConfirmation', tasks);
 };
 
-// ─────────────────────────────────────────────────────────
-// ANNOUNCEMENT BROADCAST
-// Triggered when an announcement is created.
-// Channels: Email + SMS + WhatsApp
-// ─────────────────────────────────────────────────────────
 const broadcastAnnouncement = async ({ members, announcement }) => {
   const tasks = members.flatMap(member => {
     const ch = [];
@@ -98,11 +67,6 @@ const broadcastAnnouncement = async ({ members, announcement }) => {
   await fireAll('AnnouncementBroadcast', tasks);
 };
 
-// ─────────────────────────────────────────────────────────
-// MEMBER STATEMENT
-// Triggered manually from the communication controller.
-// Channels: Email only (PDF-rich content)
-// ─────────────────────────────────────────────────────────
 const sendMemberStatement = async ({ member, statement }) => {
   if (!member?.email) {
     logger.warn(`sendMemberStatement: member ${member?.id} has no email`);
