@@ -9,10 +9,23 @@ const CATEGORIES = ['Healing', 'Family', 'Employment', 'Thanksgiving', 'Other'];
 const STATUSES   = ['Pending', 'In Progress', 'Answered', 'Closed'];
 const PRIORITIES = ['High', 'Medium', 'Low'];
 
-// All routes require a valid session
-router.use(authenticate);
+// ── PUBLIC: no auth required ──────────────────────────────────────────────────
+// Anyone (member, visitor, anonymous) can submit a prayer request via this endpoint
+router.post('/public', [
+  body('requesterName').trim().notEmpty().withMessage('Your name is required').isLength({ min: 2, max: 150 }),
+  body('title').trim().notEmpty().withMessage('Title is required').isLength({ max: 200 }),
+  body('description').trim().notEmpty().withMessage('Please describe your prayer request'),
+  body('category').isIn(CATEGORIES).withMessage(`Category must be one of: ${CATEGORIES.join(', ')}`),
+  body('email').optional({ checkFalsy: true }).isEmail().withMessage('Please enter a valid email address'),
+  body('phone').optional({ checkFalsy: true }).isString().isLength({ max: 20 }),
+  body('priority').optional().isIn(PRIORITIES),
+  body('isAnonymous').optional().isBoolean(),
+], validate, ctrl.publicSubmit);
 
 // ── Statistics (admin / pastor only) ─────────────────────────────────────────
+// All routes below this line require authentication
+router.use(authenticate);
+
 router.get('/stats', adminOrPastor, ctrl.getStats);
 
 // ── List all (all authenticated roles, with visibility filtering in controller) ──

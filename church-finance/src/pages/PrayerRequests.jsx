@@ -35,7 +35,7 @@ const categoryIcons = { Healing: '🙏', Family: '👨‍👩‍👧', Employmen
 
 const emptyForm = {
   title: '', description: '', category: 'Healing', priority: 'Medium',
-  requesterName: '', isAnonymous: false, isPrivate: false,
+  requesterName: '', email: '', phone: '', isAnonymous: false, isPrivate: false,
 }
 
 // ── Form Modal ────────────────────────────────────────────────────────────────
@@ -51,6 +51,8 @@ function PrayerFormModal({ isOpen, onClose, onSubmit, initialData }) {
       category: initialData.category || 'Healing',
       priority: initialData.priority || 'Medium',
       requesterName: initialData.requesterName || '',
+      email: initialData.email || '',
+      phone: initialData.phone || '',
       isAnonymous: initialData.isAnonymous || false,
       isPrivate: initialData.isPrivate || false,
     } : { ...emptyForm, requesterName: user?.name || '' })
@@ -81,7 +83,18 @@ function PrayerFormModal({ isOpen, onClose, onSubmit, initialData }) {
             </select>
           </div>
         </div>
-        <div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="label">Email (for answer notification)</label>
+            <input type="email" className="input-field" placeholder="email@example.com"
+              value={form.email || ''} onChange={e => set('email', e.target.value)} />
+          </div>
+          <div>
+            <label className="label">Phone (for SMS notification)</label>
+            <input type="tel" className="input-field" placeholder="07xx xxx xxx"
+              value={form.phone || ''} onChange={e => set('phone', e.target.value)} />
+          </div>
+        </div>        <div>
           <label className="label">Title</label>
           <input className="input-field" placeholder="Brief title for the request..."
             value={form.title} onChange={e => set('title', e.target.value)} required />
@@ -342,7 +355,7 @@ export default function PrayerRequests() {
           </h1>
           <p className="text-sm text-gray-400 mt-0.5">Submit, track and pray for requests from the congregation</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <button onClick={() => { fetchRequests(); fetchStats() }}
             className="btn-secondary p-2" title="Refresh">
             <RefreshCw className={clsx('w-4 h-4', loading && 'animate-spin')} />
@@ -356,6 +369,26 @@ export default function PrayerRequests() {
         </div>
       </div>
 
+      {/* Public link banner */}
+      <div className="card p-4 bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-700 flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="flex-1">
+          <p className="text-sm font-medium text-brand-800 dark:text-brand-200">Public Prayer Request Form</p>
+          <p className="text-xs text-brand-600 dark:text-brand-400 mt-0.5">
+            Share this link with members and visitors so they can submit prayer requests without needing an account.
+          </p>
+        </div>
+        <div className="flex gap-2 flex-shrink-0">
+          <a href="/pray" target="_blank" rel="noopener noreferrer"
+            className="btn-secondary text-xs px-3 py-1.5 flex items-center gap-1.5">
+            <TrendingUp className="w-3.5 h-3.5" /> Open Form
+          </a>
+          <button
+            onClick={() => { navigator.clipboard.writeText(window.location.origin + '/pray'); toast.success('Link copied!') }}
+            className="btn-primary text-xs px-3 py-1.5">
+            Copy Link
+          </button>
+        </div>
+      </div>
       {/* Stats */}
       {isPrivileged && <StatsBar stats={stats} />}
 

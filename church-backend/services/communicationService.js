@@ -75,10 +75,27 @@ const sendMemberStatement = async ({ member, statement }) => {
   await fireAll('MemberStatement', [emailSvc.sendStatementEmail(member, statement)]);
 };
 
+const sendPrayerRequestAnswered = async ({ request }) => {
+  const tasks = [];
+
+  // Email notification
+  if (request.email) {
+    tasks.push(emailSvc.sendPrayerAnsweredEmail(request));
+  }
+
+  // SMS notification
+  if (request.phone) {
+    tasks.push(smsSvc.sendPrayerAnswered(request.phone, request.requesterName));
+  }
+
+  if (tasks.length) await fireAll('PrayerRequestAnswered', tasks);
+};
+
 module.exports = {
   sendDonationConfirmation,
   sendEventReminder,
   sendPaymentConfirmation,
   broadcastAnnouncement,
   sendMemberStatement,
+  sendPrayerRequestAnswered,
 };

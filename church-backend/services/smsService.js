@@ -65,4 +65,8 @@ const sendPaymentConfirmation = (phone, name, amount, mpesaRef) =>
 const sendAnnouncement = (phone, name, title, content) =>
   send(phone, `Hi ${name}, ANNOUNCEMENT: ${title} - ${content} - ${process.env.CHURCH_NAME || 'Grace Life Church'}`);
 
-module.exports = { send, sendDonationConfirmation, sendEventReminder, sendPaymentConfirmation, sendAnnouncement };
+/** Prayer request answered notification */
+const sendPrayerAnswered = (phone, name) =>
+  send(phone, `Hi ${name}, your prayer request has been ANSWERED! We give thanks to God alongside you. - ${process.env.CHURCH_NAME || 'Grace Life Church'}`);
+
+module.exports = { send, sendDonationConfirmation, sendEventReminder, sendPaymentConfirmation, sendAnnouncement, sendPrayerAnswered };

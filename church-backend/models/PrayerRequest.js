@@ -24,6 +24,15 @@ const PrayerRequest = sequelize.define('PrayerRequest', {
     allowNull: false,
     validate: { notEmpty: true, len: [2, 150] },
   },
+  email: {
+    type: DataTypes.STRING(150),
+    allowNull: true,
+    validate: { isEmail: true },
+  },
+  phone: {
+    type: DataTypes.STRING(20),
+    allowNull: true,
+  },
   category: {
     type: DataTypes.ENUM('Healing', 'Family', 'Employment', 'Thanksgiving', 'Other'),
     allowNull: false,

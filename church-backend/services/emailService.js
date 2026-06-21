@@ -157,4 +157,44 @@ const sendStatementEmail = async (member, statement) => {
   return send({ to: member.email, subject: `Your Giving Statement — ${statement.period}`, html });
 };
 
-module.exports = { send, sendReceiptEmail, sendPasswordResetEmail, sendPaymentConfirmation, sendAnnouncementEmail, sendStatementEmail };
+const sendPrayerAnsweredEmail = async (request) => {
+  const church = process.env.CHURCH_NAME || 'Grace Life Church';
+  const html = `
+    <div style="font-family:sans-serif;max-width:520px;margin:auto;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden">
+      <div style="background:#1c1c52;padding:24px;text-align:center">
+        <h2 style="color:#f5c842;margin:0">${church}</h2>
+        <p style="color:#a5bafd;margin:4px 0 0">Prayer Request Update</p>
+      </div>
+      <div style="padding:24px">
+        <div style="text-align:center;margin-bottom:20px">
+          <span style="font-size:48px">🙏</span>
+          <h3 style="color:#059669;margin:8px 0">Your Prayer Has Been Answered!</h3>
+        </div>
+        <p>Dear <strong>${request.requesterName}</strong>,</p>
+        <p>We are delighted to share that your prayer request has been marked as <strong style="color:#059669">Answered</strong>.</p>
+        <div style="background:#f0fdf4;border-left:4px solid #059669;padding:14px 16px;border-radius:6px;margin:16px 0">
+          <div style="font-weight:600;color:#374151;margin-bottom:4px">${request.title}</div>
+          <div style="color:#6b7280;font-size:13px">${request.description}</div>
+        </div>
+        ${request.pastorNote ? `
+        <div style="background:#eff6ff;border-left:4px solid #3b82f6;padding:14px 16px;border-radius:6px;margin:16px 0">
+          <div style="font-size:12px;font-weight:600;color:#3b82f6;margin-bottom:4px">Message from your Pastor</div>
+          <div style="color:#374151;font-size:13px">${request.pastorNote}</div>
+        </div>` : ''}
+        <p style="color:#6b7280;font-size:13px;line-height:1.6">
+          We give thanks to God for His faithfulness. The church has been praying alongside you and we celebrate this answered prayer with you.
+        </p>
+        <p style="color:#6b7280;font-size:13px">God bless you! 🌟</p>
+      </div>
+      <div style="background:#f9fafb;padding:16px;text-align:center;font-size:12px;color:#9ca3af">
+        ${church} · Nairobi, Kenya
+      </div>
+    </div>`;
+  return send({
+    to: request.email,
+    subject: `🙏 Your Prayer Has Been Answered — ${church}`,
+    html,
+  });
+};
+
+module.exports = { send, sendReceiptEmail, sendPasswordResetEmail, sendPaymentConfirmation, sendAnnouncementEmail, sendStatementEmail, sendPrayerAnsweredEmail };

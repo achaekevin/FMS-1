@@ -1,18 +1,18 @@
 const { PrayerRequest, User, Member } = require('../models');
 const api    = require('../utils/apiResponse');
 const audit  = require('../services/auditService');
+const comms  = require('../services/communicationService');
 const { getPagination } = require('../utils/helpers');
 const { Op, literal } = require('sequelize');
 
 // ── Association includes ──────────────────────────────────────────────────────
 
-const SUBMITTER_INCLUDE = { model: User, as: 'submitter', attributes: ['id', 'name'] };
-const ASSIGNEE_INCLUDE  = { model: User, as: 'assignee',  attributes: ['id', 'name'] };
-const MEMBER_INCLUDE    = { model: Member, as: 'member',  attributes: ['id', 'fullName', 'phone', 'email'] };
+const SUBMITTER_INCLUDE = { model: User,   as: 'submitter', attributes: ['id', 'name'] };
+const ASSIGNEE_INCLUDE  = { model: User,   as: 'assignee',  attributes: ['id', 'name'] };
+const MEMBER_INCLUDE    = { model: Member, as: 'member',    attributes: ['id', 'fullName', 'phone', 'email'] };
 
-/** Build include array – hides member details for anonymous requests unless admin/pastor */
 const buildInclude = (user) => {
-  const canSeePII = ['administrator', 'pastor'].includes(user.role);
+  const canSeePII = ['administrator', 'pastor'].includes(user?.role);
   return [
     SUBMITTER_INCLUDE,
     ASSIGNEE_INCLUDE,
@@ -20,12 +20,46 @@ const buildInclude = (user) => {
   ];
 };
 
-/** Determine whether a user can see a private prayer request */
 const canAccessPrivate = (user, request) => {
-  if (['administrator'].includes(user.role)) return true;
+  if (!user) return false;
+  if (user.role === 'administrator') return true;
   if (user.role === 'pastor' && request.assignedTo === user.id) return true;
   if (request.submittedBy === user.id) return true;
   return false;
+};
+
+// ── Public: submit without login ──────────────────────────────────────────────
+// POST /prayer-requests/public
+
+exports.publicSubmit = async (req, res) => {
+  try {
+    const {
+      requesterName, email, phone, category, title, description,
+      isAnonymous = false, priority = 'Medium',
+    } = req.body;
+
+    const pr = await PrayerRequest.create({
+      memberId:      null,
+      submittedBy:   null,  // public submission — no user account
+      requesterName: requesterName.trim(),
+      email:         email   ? email.toLowerCase().trim()  : null,
+      phone:         phone   ? phone.trim()                : null,
+      category,
+      title:         title.trim(),
+      description:   description.trim(),
+      isAnonymous,
+      isPrivate:     false,
+      priority,
+      status:        'Pending',
+    });
+
+    return api.created(res, {
+      id: pr.id,
+      title: pr.title,
+      category: pr.category,
+      status: pr.status,
+    }, 'Your prayer request has been submitted. We will be praying for you!');
+  } catch (err) { return api.error(res, err.message); }
 };
 
 // ── GET /prayer-requests ──────────────────────────────────────────────────────
@@ -36,13 +70,12 @@ exports.getAll = async (req, res) => {
     const { limit: lim, offset } = getPagination(page, limit);
 
     const where = {};
-    if (status)     where.status   = status;
-    if (category)   where.category = category;
-    if (priority)   where.priority = priority;
+    if (status)     where.status    = status;
+    if (category)   where.category  = category;
+    if (priority)   where.priority  = priority;
     if (assignedTo) where.assignedTo = assignedTo;
     if (memberId)   where.memberId   = memberId;
 
-    // Non-admins and non-pastors only see public requests + their own
     const isPrivileged = ['administrator', 'pastor'].includes(req.user.role);
     if (!isPrivileged) {
       where[Op.or] = [
@@ -52,17 +85,11 @@ exports.getAll = async (req, res) => {
     }
 
     const { count, rows } = await PrayerRequest.findAndCountAll({
-      where,
-      limit: lim,
-      offset,
+      where, limit: lim, offset,
       include: buildInclude(req.user),
-      order: [
-        ['priority', 'ASC'],   // High < Medium < Low (alphabetical ENUM sort)
-        ['createdAt', 'DESC'],
-      ],
+      order: [['priority', 'ASC'], ['createdAt', 'DESC']],
     });
 
-    // Strip sensitive fields from anonymous requests for non-privileged users
     const sanitised = rows.map(r => sanitiseRequest(r, req.user));
     return api.paginate(res, sanitised, count, page, lim);
   } catch (err) { return api.error(res, err.message); }
@@ -82,12 +109,12 @@ exports.getById = async (req, res) => {
   } catch (err) { return api.error(res, err.message); }
 };
 
-// ── POST /prayer-requests ─────────────────────────────────────────────────────
+// ── POST /prayer-requests (authenticated) ─────────────────────────────────────
 
 exports.create = async (req, res) => {
   try {
     const {
-      memberId, requesterName, category, title, description,
+      memberId, requesterName, email, phone, category, title, description,
       isAnonymous = false, isPrivate = false, priority = 'Medium',
     } = req.body;
 
@@ -95,17 +122,12 @@ exports.create = async (req, res) => {
       memberId:      memberId || null,
       submittedBy:   req.user.id,
       requesterName: requesterName || req.user.name,
-      category,
-      title,
-      description,
-      isAnonymous,
-      isPrivate,
-      priority,
-      status: 'Pending',
+      email:         email  ? email.toLowerCase().trim()  : null,
+      phone:         phone  ? phone.trim()                : null,
+      category, title, description, isAnonymous, isPrivate, priority, status: 'Pending',
     });
 
     await audit.log(req.user.id, 'CREATE', 'PRAYER_REQUEST', `New prayer request: ${title}`, { id: pr.id }, req);
-
     const full = await PrayerRequest.findByPk(pr.id, { include: buildInclude(req.user) });
     return api.created(res, full, 'Prayer request submitted successfully');
   } catch (err) { return api.error(res, err.message); }
@@ -118,37 +140,58 @@ exports.update = async (req, res) => {
     const r = await PrayerRequest.findByPk(req.params.id);
     if (!r) return api.notFound(res, 'Prayer request not found');
 
-    const isAdmin    = req.user.role === 'administrator';
-    const isPastor   = req.user.role === 'pastor';
-    const isOwner    = r.submittedBy === req.user.id;
+    const isAdmin  = req.user.role === 'administrator';
+    const isPastor = req.user.role === 'pastor';
+    const isOwner  = r.submittedBy === req.user.id;
 
     if (!isAdmin && !isPastor && !isOwner)
       return api.forbidden(res, 'You are not authorised to edit this prayer request');
 
-    // Fields anyone (owner/pastor/admin) can update
-    const allowed = ['title', 'description', 'category', 'priority', 'isPrivate', 'isAnonymous'];
-
-    // Pastor/admin-only fields
+    const allowed          = ['title', 'description', 'category', 'priority', 'isPrivate', 'isAnonymous', 'email', 'phone'];
     const privilegedFields = ['status', 'assignedTo', 'pastorNote', 'resolvedAt'];
 
     const updates = {};
     allowed.forEach(f => { if (req.body[f] !== undefined) updates[f] = req.body[f]; });
 
+    const previousStatus = r.status;
+
     if (isAdmin || isPastor) {
       privilegedFields.forEach(f => { if (req.body[f] !== undefined) updates[f] = req.body[f]; });
-
-      // Auto-set resolvedAt when status flips to Answered/Closed
       if (['Answered', 'Closed'].includes(updates.status) && !r.resolvedAt) {
         updates.resolvedAt = new Date();
       }
-      // Clear resolvedAt if status is reset to Pending/In Progress
       if (['Pending', 'In Progress'].includes(updates.status)) {
         updates.resolvedAt = null;
       }
     }
 
     await r.update(updates);
-    await audit.log(req.user.id, 'UPDATE', 'PRAYER_REQUEST', `Updated prayer request: ${r.title}`, { id: r.id }, req);
+    await audit.log(req.user.id, 'UPDATE', 'PRAYER_REQUEST', `Updated: ${r.title}`, { id: r.id }, req);
+
+    // ── Notify submitter when status becomes "Answered" ──────────────────────
+    if (updates.status === 'Answered' && previousStatus !== 'Answered') {
+      const fresh = await PrayerRequest.findByPk(r.id);
+      const notifyPayload = {
+        id:            fresh.id,
+        requesterName: fresh.requesterName,
+        title:         fresh.title,
+        description:   fresh.description,
+        email:         fresh.email,
+        phone:         fresh.phone,
+        pastorNote:    fresh.pastorNote,
+      };
+
+      // Also check if linked member has contact details
+      if (!notifyPayload.email && fresh.memberId) {
+        const member = await Member.findByPk(fresh.memberId, { attributes: ['email', 'phone', 'fullName'] });
+        if (member) {
+          notifyPayload.email = member.email;
+          notifyPayload.phone = notifyPayload.phone || member.phone;
+        }
+      }
+
+      comms.sendPrayerRequestAnswered({ request: notifyPayload }).catch(() => {});
+    }
 
     const updated = await PrayerRequest.findByPk(r.id, { include: buildInclude(req.user) });
     return api.success(res, sanitiseRequest(updated, req.user), 'Prayer request updated');
@@ -165,18 +208,13 @@ exports.assign = async (req, res) => {
     const { assignedTo } = req.body;
     if (!assignedTo) return api.badRequest(res, 'assignedTo is required');
 
-    // Verify the target user exists and has an appropriate role
     const pastor = await User.findOne({
       where: { id: assignedTo, role: { [Op.in]: ['pastor', 'administrator'] }, status: 'active' },
     });
     if (!pastor) return api.notFound(res, 'Target pastor/admin user not found or inactive');
 
     await r.update({ assignedTo, status: r.status === 'Pending' ? 'In Progress' : r.status });
-    await audit.log(
-      req.user.id, 'UPDATE', 'PRAYER_REQUEST',
-      `Assigned prayer request "${r.title}" to user ${assignedTo}`,
-      { id: r.id, assignedTo }, req,
-    );
+    await audit.log(req.user.id, 'UPDATE', 'PRAYER_REQUEST', `Assigned "${r.title}" to user ${assignedTo}`, { id: r.id, assignedTo }, req);
 
     const updated = await PrayerRequest.findByPk(r.id, { include: buildInclude(req.user) });
     return api.success(res, updated, `Prayer request assigned to ${pastor.name}`);
@@ -184,7 +222,6 @@ exports.assign = async (req, res) => {
 };
 
 // ── PATCH /prayer-requests/:id/pray ──────────────────────────────────────────
-/** Increment the prayer count – any authenticated user can click "I prayed for this" */
 
 exports.incrementPrayerCount = async (req, res) => {
   try {
@@ -214,7 +251,7 @@ exports.remove = async (req, res) => {
       return api.forbidden(res, 'You are not authorised to delete this prayer request');
 
     await r.destroy();
-    await audit.log(req.user.id, 'DELETE', 'PRAYER_REQUEST', `Deleted prayer request: ${r.title}`, null, req);
+    await audit.log(req.user.id, 'DELETE', 'PRAYER_REQUEST', `Deleted: ${r.title}`, null, req);
     return api.success(res, null, 'Prayer request deleted');
   } catch (err) { return api.error(res, err.message); }
 };
@@ -224,40 +261,34 @@ exports.remove = async (req, res) => {
 exports.getStats = async (req, res) => {
   try {
     const [byStatus, byCategory] = await Promise.all([
-      PrayerRequest.findAll({
-        attributes: ['status', [literal('COUNT(*)'), 'count']],
-        group: ['status'],
-        raw: true,
-      }),
-      PrayerRequest.findAll({
-        attributes: ['category', [literal('COUNT(*)'), 'count']],
-        group: ['category'],
-        raw: true,
-      }),
+      PrayerRequest.findAll({ attributes: ['status', [literal('COUNT(*)'), 'count']], group: ['status'], raw: true }),
+      PrayerRequest.findAll({ attributes: ['category', [literal('COUNT(*)'), 'count']], group: ['category'], raw: true }),
     ]);
-
     const total = await PrayerRequest.count();
-    return api.success(res, { total, byStatus, byCategory }, 'Prayer request statistics');
+    return api.success(res, { total, byStatus, byCategory });
   } catch (err) { return api.error(res, err.message); }
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-/**
- * Hide requester PII for anonymous requests when the viewer lacks privileges.
- * Also hide pastorNote from non-privileged viewers.
- */
 function sanitiseRequest(record, user) {
   const plain = record.toJSON ? record.toJSON() : record;
-  const canSeePII = ['administrator', 'pastor'].includes(user.role);
+  const canSeePII = ['administrator', 'pastor'].includes(user?.role);
 
   if (plain.isAnonymous && !canSeePII) {
     plain.requesterName = 'Anonymous';
     plain.member        = undefined;
     plain.memberId      = undefined;
+    plain.email         = undefined;
+    plain.phone         = undefined;
   }
   if (!canSeePII) {
     delete plain.pastorNote;
+    // Hide contact details from non-privileged viewers
+    if (!plain.isAnonymous) {
+      delete plain.email;
+      delete plain.phone;
+    }
   }
   return plain;
 }
