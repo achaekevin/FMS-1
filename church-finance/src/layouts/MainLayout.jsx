@@ -10,7 +10,7 @@ import {
   Phone, ClipboardList, Menu, X, LogOut, ChevronDown, Bell, Settings,
   Church, Sun, Moon, Search, Building2, Package, Users2, Megaphone,
   GitBranch, Calendar, ChevronRight, MessageSquare, FolderOpen, UserCheck,
-  User, Heart, HandHeart,
+  User, Heart, HandHeart, Sparkles,
 } from 'lucide-react'
 import clsx from 'clsx'
 

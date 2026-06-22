@@ -33,6 +33,7 @@ import Attendance from './pages/Attendance'
 import Visitors from './pages/Visitors'
 import PrayerRequests from './pages/PrayerRequests'
 import PublicPrayerRequest from './pages/PublicPrayerRequest'
+import HabitTracker from './pages/HabitTracker'
 
 const Protected = ({ children }) => (
   <ProtectedRoute>
@@ -54,6 +55,7 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password"  element={<ResetPassword />} />
           <Route path="/pray"            element={<PublicPrayerRequest />} />
+          <Route path="/habits"          element={<HabitTracker />} />
           <Route path="/profile"         element={<Protected><Profile /></Protected>} />
 
           <Route path="/dashboard"     element={<Protected><Dashboard /></Protected>} />
