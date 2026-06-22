@@ -3,13 +3,14 @@ const api   = require('../utils/apiResponse');
 const audit = require('../services/auditService');
 
 const DEFAULT_SETTINGS = [
-  { key: 'church_name',    value: 'Grace Life Church',          description: 'Church display name' },
-  { key: 'church_address', value: 'Nairobi, Kenya',             description: 'Physical address' },
-  { key: 'church_phone',   value: '+254 700 000 000',           description: 'Contact phone' },
-  { key: 'church_email',   value: 'info@gracelifechurch.org',   description: 'Contact email' },
-  { key: 'currency',       value: 'KES',                        description: 'Default currency' },
-  { key: 'fiscal_year',    value: 'January - December',         description: 'Fiscal year period' },
-  { key: 'logo_url',       value: null,                         description: 'Church logo URL' },
+  { key: 'church_name',              value: 'Grace Life Church',          description: 'Church display name' },
+  { key: 'church_address',           value: 'Nairobi, Kenya',             description: 'Physical address' },
+  { key: 'church_phone',             value: '+254 700 000 000',           description: 'Contact phone' },
+  { key: 'church_email',             value: 'info@gracelifechurch.org',   description: 'Contact email' },
+  { key: 'currency',                 value: 'KES',                        description: 'Default currency' },
+  { key: 'fiscal_year',              value: 'January - December',         description: 'Fiscal year period' },
+  { key: 'logo_url',                 value: null,                         description: 'Church logo URL' },
+  { key: 'dual_auth_threshold',      value: '5000',                       description: 'Expenses above this amount require dual-authorization (Pastor + Admin approval). Set to 0 to require dual-auth for ALL expenses.' },
 ];
 
 /** GET /settings — returns all as key-value map */

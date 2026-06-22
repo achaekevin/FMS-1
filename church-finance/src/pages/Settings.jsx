@@ -1,26 +1,53 @@
-import { useState } from 'react'
-import { useFinance } from '../contexts/FinanceContext'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { Settings as SettingsIcon, Church, Phone, Mail, MapPin, DollarSign, Calendar, Save, Sun, Moon } from 'lucide-react'
+import api from '../utils/api'
+import { Settings as SettingsIcon, Church, Phone, Mail, MapPin, DollarSign, Calendar, Save, Sun, Moon, Shield, Loader2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
-const CURRENCIES = ['KES', 'USD', 'EUR', 'GBP', 'UGX', 'TZS']
+const CURRENCIES   = ['KES', 'USD', 'EUR', 'GBP', 'UGX', 'TZS']
 const FISCAL_YEARS = ['January - December', 'April - March', 'July - June', 'October - September']
 
 export default function Settings() {
-  const { settings, updateSettings } = useFinance()
   const { user, darkMode, toggleDarkMode } = useAuth()
-  const [form, setForm] = useState({ ...settings })
-  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({
+    churchName: '', address: '', phone: '', email: '',
+    currency: 'KES', fiscalYear: 'January - December', dual_auth_threshold: '5000',
+  })
+  const [saving,  setSaving]  = useState(false)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    api.get('/settings').then(res => {
+      const s = res.data.data || {}
+      setForm({
+        churchName:           s.church_name    || '',
+        address:              s.church_address || '',
+        phone:                s.church_phone   || '',
+        email:                s.church_email   || '',
+        currency:             s.currency       || 'KES',
+        fiscalYear:           s.fiscal_year    || 'January - December',
+        dual_auth_threshold:  s.dual_auth_threshold || '5000',
+      })
+    }).catch(() => {}).finally(() => setLoading(false))
+  }, [])
 
   const handleChange = e => setForm(p => ({ ...p, [e.target.name]: e.target.value }))
 
   const handleSave = async () => {
     setSaving(true)
-    await new Promise(r => setTimeout(r, 500))
-    updateSettings(form, user)
-    toast.success('Settings saved successfully')
-    setSaving(false)
+    try {
+      await api.put('/settings', {
+        church_name:          form.churchName,
+        church_address:       form.address,
+        church_phone:         form.phone,
+        church_email:         form.email,
+        currency:             form.currency,
+        fiscal_year:          form.fiscalYear,
+        dual_auth_threshold:  String(form.dual_auth_threshold),
+      })
+      toast.success('Settings saved successfully')
+    } catch (err) { toast.error(err.message || 'Failed to save settings') }
+    finally { setSaving(false) }
   }
 
   const isAdmin = user?.role === 'administrator'
@@ -97,9 +124,41 @@ export default function Settings() {
         )}
       </div>
 
-      {/* System info */}
+      {/* Dual-Authorization */}
       <div className="card p-5">
-        <h2 className="section-title">System Information</h2>
+        <h2 className="section-title flex items-center gap-2">
+          <Shield className="w-4 h-4 text-brand-600" /> Dual-Authorization (Maker-Checker)
+        </h2>
+        <p className="text-sm text-gray-400 mb-4">
+          Expenses that meet or exceed this threshold require approval from both the <strong>Pastor</strong> and the <strong>Administrator</strong> before funds are disbursed. Set to <code className="bg-gray-100 dark:bg-gray-700 px-1 rounded">0</code> to require dual-auth for every expense.
+        </p>
+        <div className="max-w-xs">
+          <label className="label flex items-center gap-1.5"><DollarSign className="w-3.5 h-3.5" /> Approval Threshold (KES)</label>
+          <input
+            type="number" min="0" step="500"
+            name="dual_auth_threshold"
+            className="input-field"
+            value={form.dual_auth_threshold}
+            onChange={handleChange}
+            disabled={!isAdmin}
+            placeholder="e.g. 5000"
+          />
+          <p className="text-xs text-gray-400 mt-1">
+            Current: expenses ≥ KES {Number(form.dual_auth_threshold || 0).toLocaleString()} require dual-auth.
+            Below this amount are auto-approved immediately.
+          </p>
+        </div>
+        {isAdmin && (
+          <div className="mt-4 flex justify-end">
+            <button onClick={handleSave} disabled={saving} className="btn-primary disabled:opacity-70">
+              {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</> : <><Save className="w-4 h-4" /> Save Settings</>}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* System info */}
+      <div className="card p-5">        <h2 className="section-title">System Information</h2>
         <div className="grid grid-cols-2 gap-3">
           {[
             { label: 'Version', value: '2.0.0' },

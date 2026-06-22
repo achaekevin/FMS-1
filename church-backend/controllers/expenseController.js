@@ -3,6 +3,7 @@ const api         = require('../utils/apiResponse');
 const audit       = require('../services/auditService');
 const fundSvc     = require('../services/fundService');
 const notify      = require('../services/notificationService');
+const { Setting } = require('../models');
 const { getPagination, buildDateFilter } = require('../utils/helpers');
 const { sequelize } = require('../config/sequelize');
 const { Op, fn, col } = require('sequelize');
@@ -14,6 +15,20 @@ const INCLUDE = [
   { model: User, as: 'pastor',   attributes: ['id', 'name'], required: false },
   { model: User, as: 'admin',    attributes: ['id', 'name'], required: false },
 ];
+
+// ── Get dual-auth threshold from settings (cached for 60s) ─
+let _thresholdCache = null;
+let _thresholdCachedAt = 0;
+const getDualAuthThreshold = async () => {
+  const now = Date.now();
+  if (_thresholdCache !== null && now - _thresholdCachedAt < 60000) return _thresholdCache;
+  try {
+    const s = await Setting.findOne({ where: { key: 'dual_auth_threshold' } });
+    _thresholdCache = s ? parseFloat(s.value) : 5000;
+  } catch { _thresholdCache = 5000; }
+  _thresholdCachedAt = now;
+  return _thresholdCache;
+};
 
 // ── Helper: notify all users of a given role ──────────────
 const notifyRole = async (role, title, message, module = 'EXPENSE') => {
@@ -71,31 +86,56 @@ exports.getById = async (req, res) => {
  * Fund is NOT debited yet; money is only moved on admin finalization.
  */
 exports.create = async (req, res) => {
+  const t = await sequelize.transaction();
   try {
+    const threshold = await getDualAuthThreshold();
+    const amount    = parseFloat(req.body.amount || 0);
+    const needsDualAuth = amount >= threshold;
+
     const data = {
       ...req.body,
       recordedBy: req.user.id,
-      status: 'pending_pastor',  // always starts here
       approvedBy: null,
     };
     if (req.file) data.receiptPath = req.file.path;
 
-    const record = await Expense.create(data);
-    const full   = await Expense.findByPk(record.id, { include: INCLUDE });
+    if (needsDualAuth) {
+      // High-value — requires pastor + admin approval
+      data.status = 'pending_pastor';
+      const record = await Expense.create(data, { transaction: t });
+      await t.commit();
 
-    await audit.log(req.user.id, 'CREATE', 'EXPENSE',
-      `Expense submitted for approval: ${req.body.category} KES ${req.body.amount}`,
-      { expenseId: record.id }, req,
-      { after: full });
+      const full = await Expense.findByPk(record.id, { include: INCLUDE });
+      await audit.log(req.user.id, 'CREATE', 'EXPENSE',
+        `Expense submitted for dual-auth approval: ${req.body.category} KES ${amount} (threshold: KES ${threshold})`,
+        { expenseId: record.id }, req, { after: full });
 
-    // Notify all pastors
-    await notifyRole('pastor',
-      'Expense Awaiting Your Approval',
-      `A ${req.body.category} expense of KES ${req.body.amount} has been submitted by ${req.user.name} and requires your approval.`
-    );
+      await notifyRole('pastor',
+        'Expense Awaiting Your Approval',
+        `A ${req.body.category} expense of KES ${amount} has been submitted by ${req.user.name} and requires your approval. (Dual-auth required — above KES ${threshold} threshold)`
+      );
 
-    return api.created(res, full, 'Expense submitted and is awaiting pastor approval');
+      return api.created(res, full, `Expense submitted — dual-authorization required (KES ${amount} exceeds KES ${threshold} threshold). Awaiting pastor approval.`);
+    } else {
+      // Below threshold — auto-approve immediately, debit fund
+      data.status    = 'approved';
+      data.approvedBy = req.user.name;
+      data.adminId   = req.user.id;
+      data.adminFinalizedAt = new Date();
+
+      const record = await Expense.create(data, { transaction: t });
+      if (req.body.fundId) await fundSvc.debitFund(req.body.fundId, amount, t);
+      await t.commit();
+
+      const full = await Expense.findByPk(record.id, { include: INCLUDE });
+      await audit.log(req.user.id, 'CREATE', 'EXPENSE',
+        `Expense auto-approved (below KES ${threshold} threshold): ${req.body.category} KES ${amount}`,
+        { expenseId: record.id }, req, { after: full });
+
+      return api.created(res, full, `Expense recorded and auto-approved (KES ${amount} is below the KES ${threshold} dual-auth threshold).`);
+    }
   } catch (err) {
+    await t.rollback();
     return api.error(res, err.message);
   }
 };
@@ -296,6 +336,18 @@ exports.remove = async (req, res) => {
   } catch (err) {
     return api.error(res, err.message);
   }
+};
+
+/**
+ * GET /api/expenses/threshold
+ * Returns the current dual-auth threshold from settings
+ */
+exports.getThreshold = async (req, res) => {
+  try {
+    _thresholdCache = null; // bust cache
+    const threshold = await getDualAuthThreshold();
+    return api.success(res, { threshold });
+  } catch (err) { return api.error(res, err.message); }
 };
 
 /**

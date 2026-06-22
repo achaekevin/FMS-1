@@ -9,9 +9,10 @@ const ctrl     = require('../controllers/expenseController');
 router.use(authenticate);
 
 // ── Read (all authenticated roles) ────────────────────────
-router.get('/',        ctrl.getAll);
-router.get('/summary', ctrl.getSummary);
-router.get('/:id',     ctrl.getById);
+router.get('/',          ctrl.getAll);
+router.get('/summary',   ctrl.getSummary);
+router.get('/threshold', ctrl.getThreshold);
+router.get('/:id',       ctrl.getById);
 
 // ── Create (treasurer or admin) ───────────────────────────
 const expenseRules = [
