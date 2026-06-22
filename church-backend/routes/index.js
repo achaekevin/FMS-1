@@ -30,6 +30,7 @@ router.use('/documents',     require('./documentRoutes'));
 router.use('/attendance',    require('./attendanceRoutes'));
 router.use('/visitors',     require('./visitorRoutes'));
 router.use('/prayer-requests', require('./prayerRequestRoutes'));
+router.use('/tax-statements',  require('./taxExemptRoutes'));
 
 // ── Health check ──────────────────────────────────────────
 router.get('/health', (req, res) => res.json({

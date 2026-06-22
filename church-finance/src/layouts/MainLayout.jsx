@@ -10,7 +10,7 @@ import {
   Phone, ClipboardList, Menu, X, LogOut, ChevronDown, Bell, Settings,
   Church, Sun, Moon, Search, Building2, Package, Users2, Megaphone,
   GitBranch, Calendar, ChevronRight, MessageSquare, FolderOpen, UserCheck,
-  User, Heart, HandHeart, Sparkles,
+  User, Heart, HandHeart, Sparkles, Shield,
 } from 'lucide-react'
 import clsx from 'clsx'
 
@@ -45,6 +45,8 @@ const navSections = [
     label: 'Reports & Admin',
     items: [
       { path: '/reports',       label: 'Reports',        icon: FileText,      permission: 'view_reports'        },
+      { path: '/tax-statements', label: 'Tax Statements', icon: Shield,        permission: 'manage_tax_statements'},
+      { path: '/tax-statements', label: 'Tax Statements', icon: Shield,        permission: 'manage_tax_statements'},
       { path: '/audit',         label: 'Audit Logs',     icon: ClipboardList, permission: 'audit'               },
       { path: '/communication', label: 'Communications', icon: MessageSquare, permission: 'manage_communications'},
       { path: '/notifications', label: 'Notifications',  icon: Bell,          permission: 'view_notifications'  },

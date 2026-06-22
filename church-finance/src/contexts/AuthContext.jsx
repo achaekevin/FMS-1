@@ -121,6 +121,7 @@ export const AuthProvider = ({ children }) => {
         'manage_visitors',
         'view_prayer_requests',
         'view_habits',
+        'manage_tax_statements',
       ],
     }
     const userPerms = perms[user.role] || []
