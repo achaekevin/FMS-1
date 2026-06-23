@@ -36,6 +36,9 @@ router.put('/:id', adminOrTreasurer, [
   body('email').optional().isEmail(),
 ], validate, ctrl.update);
 
+// Approve a pending (self-registered) member
+router.patch('/:id/approve', adminOrTreasurer, ctrl.approve);
+
 router.delete('/:id', adminOrTreasurer, ctrl.remove);
 
 module.exports = router;

@@ -157,8 +157,7 @@ const sendStatementEmail = async (member, statement) => {
   return send({ to: member.email, subject: `Your Giving Statement — ${statement.period}`, html });
 };
 
-const sendPrayerAnsweredEmail = async (request) => {
-  const church = process.env.CHURCH_NAME || 'Grace Life Church';
+const sendPrayerAnsweredEmail = async (request) => {  const church = process.env.CHURCH_NAME || 'Grace Life Church';
   const html = `
     <div style="font-family:sans-serif;max-width:520px;margin:auto;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden">
       <div style="background:#1c1c52;padding:24px;text-align:center">
@@ -197,4 +196,73 @@ const sendPrayerAnsweredEmail = async (request) => {
   });
 };
 
-module.exports = { send, sendReceiptEmail, sendPasswordResetEmail, sendPaymentConfirmation, sendAnnouncementEmail, sendStatementEmail, sendPrayerAnsweredEmail };
+module.exports = { send, sendReceiptEmail, sendPasswordResetEmail, sendPaymentConfirmation, sendAnnouncementEmail, sendStatementEmail, sendPrayerAnsweredEmail, sendMemberWelcomeEmail, sendNewMemberAlertEmail };
+
+// ── Member registration emails ────────────────────────────
+
+function sendMemberWelcomeEmail(member) {
+  // Only send if member has an email
+  if (!member.email) return Promise.resolve({ skipped: true });
+  const church = process.env.CHURCH_NAME || 'Grace Life Church';
+  const html = `
+    <div style="font-family:sans-serif;max-width:520px;margin:auto;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden">
+      <div style="background:#1c1c52;padding:28px;text-align:center">
+        <h2 style="color:#f5c842;margin:0;font-size:22px">${church}</h2>
+        <p style="color:#a5bafd;margin:6px 0 0;font-size:13px">Member Registration</p>
+      </div>
+      <div style="padding:28px">
+        <div style="text-align:center;margin-bottom:24px">
+          <span style="font-size:52px">🎉</span>
+          <h3 style="color:#1c1c52;margin:12px 0 4px">Welcome, ${member.fullName}!</h3>
+          <p style="color:#6b7280;font-size:14px;margin:0">You have successfully registered as a member of ${church}.</p>
+        </div>
+        <div style="background:#f0f4ff;border-radius:10px;padding:18px;margin-bottom:20px">
+          <p style="font-weight:700;color:#1c1c52;margin:0 0 12px;font-size:14px">Your Details</p>
+          <table style="width:100%;font-size:13px">
+            <tr><td style="color:#6b7280;padding:4px 0">Name</td><td style="color:#374151;font-weight:600;text-align:right">${member.fullName}</td></tr>
+            <tr><td style="color:#6b7280;padding:4px 0">Phone</td><td style="color:#374151;font-weight:600;text-align:right">${member.phone}</td></tr>
+            ${member.email ? `<tr><td style="color:#6b7280;padding:4px 0">Email</td><td style="color:#374151;font-weight:600;text-align:right">${member.email}</td></tr>` : ''}
+            <tr><td style="color:#6b7280;padding:4px 0">Joined</td><td style="color:#374151;font-weight:600;text-align:right">${new Date().toLocaleDateString('en-KE',{dateStyle:'long'})}</td></tr>
+          </table>
+        </div>
+        <p style="color:#6b7280;font-size:13px;line-height:1.7;text-align:center">
+          We are glad to have you with us. Come and worship with us every Sunday and be part of our growing family.
+        </p>
+        <p style="color:#6b7280;font-size:13px;text-align:center;margin-top:8px">God bless you! 🙏</p>
+      </div>
+      <div style="background:#f9fafb;padding:14px;text-align:center;font-size:11px;color:#9ca3af">
+        ${church} · ${process.env.CHURCH_ADDRESS || 'Kenya'} · ${process.env.CHURCH_PHONE || ''}
+      </div>
+    </div>`;
+  return send({ to: member.email, subject: `Welcome to ${church}! 🎉`, html });
+}
+
+function sendNewMemberAlertEmail(adminEmail, member) {
+  if (!adminEmail) return Promise.resolve({ skipped: true });
+  const church   = process.env.CHURCH_NAME || 'Grace Life Church';
+  const adminUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/members`;
+  const html = `
+    <div style="font-family:sans-serif;max-width:500px;margin:auto;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden">
+      <div style="background:#1c1c52;padding:24px">
+        <h2 style="color:#f5c842;margin:0;font-size:18px">${church}</h2>
+        <p style="color:#a5bafd;margin:4px 0 0;font-size:12px">New Member Registration Alert</p>
+      </div>
+      <div style="padding:24px">
+        <p style="color:#374151;font-size:14px">A new member has self-registered and is <strong style="color:#d97706">awaiting approval</strong>:</p>
+        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:16px;margin:16px 0">
+          <table style="width:100%;font-size:13px">
+            <tr><td style="color:#92400e;padding:3px 0;width:80px">Name</td><td style="color:#374151;font-weight:700">${member.fullName}</td></tr>
+            <tr><td style="color:#92400e;padding:3px 0">Phone</td><td style="color:#374151;font-weight:700">${member.phone}</td></tr>
+            ${member.email ? `<tr><td style="color:#92400e;padding:3px 0">Email</td><td style="color:#374151">${member.email}</td></tr>` : ''}
+            ${member.gender ? `<tr><td style="color:#92400e;padding:3px 0">Gender</td><td style="color:#374151;text-transform:capitalize">${member.gender}</td></tr>` : ''}
+            <tr><td style="color:#92400e;padding:3px 0">Registered</td><td style="color:#374151">${new Date().toLocaleString('en-KE')}</td></tr>
+          </table>
+        </div>
+        <a href="${adminUrl}?status=pending" style="display:inline-block;background:#4f4fe8;color:white;padding:11px 22px;border-radius:8px;text-decoration:none;font-weight:600;font-size:13px">
+          Review in Admin Panel →
+        </a>
+      </div>
+      <div style="background:#f9fafb;padding:12px;text-align:center;font-size:11px;color:#9ca3af">${church}</div>
+    </div>`;
+  return send({ to: adminEmail, subject: `🆕 New Member Registration — ${member.fullName}`, html });
+}
