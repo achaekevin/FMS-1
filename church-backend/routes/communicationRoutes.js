@@ -98,4 +98,12 @@ router.post('/whatsapp/custom', adminOnly, [
   body('message').notEmpty().withMessage('Message is required'),
 ], validate, ctrl.sendCustomWhatsApp);
 
+/**
+ * POST /api/communications/whatsapp/test
+ * Body: { phone }   — returns full Twilio response or exact error for diagnosis
+ */
+router.post('/whatsapp/test', adminOnly, [
+  body('phone').notEmpty().withMessage('phone is required'),
+], validate, ctrl.testWhatsApp);
+
 module.exports = router;
