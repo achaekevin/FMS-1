@@ -10,7 +10,7 @@ import {
   Phone, ClipboardList, Menu, X, LogOut, ChevronDown, Bell, Settings,
   Church, Sun, Moon, Search, Building2, Package, Users2, Megaphone,
   GitBranch, Calendar, ChevronRight, MessageSquare, FolderOpen, UserCheck,
-  User, Heart, HandHeart, Sparkles, Shield,
+  User, Heart, HandHeart, Sparkles, Shield, QrCode,
 } from 'lucide-react'
 import clsx from 'clsx'
 
@@ -23,6 +23,7 @@ const navSections = [
       { path: '/expenses',  label: 'Expenses',      icon: TrendingDown,    permission: 'view_expense'  },
       { path: '/funds',     label: 'Fund Accounts', icon: Wallet,          permission: 'view_funds'    },
       { path: '/members',   label: 'Members',       icon: Users,           permission: 'view_members'  },
+      { path: '/members/qr', label: 'Member QR Code', icon: QrCode,         permission: 'manage_members' },
       { path: '/mpesa',     label: 'M-Pesa',        icon: Phone,           permission: 'mpesa'         },
     ],
   },

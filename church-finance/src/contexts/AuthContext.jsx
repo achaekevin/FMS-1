@@ -108,8 +108,7 @@ export const AuthProvider = ({ children }) => {
       ],
       treasurer: [
         'view_dashboard','manage_income','manage_expense',
-        'view_members','manage_members',
-        'view_reports','export',
+        'view_members','manage_members',        'view_reports','export',
         'view_funds','manage_funds',
         'mpesa','audit',
         'manage_budget','view_events','manage_events',

@@ -35,6 +35,8 @@ import PrayerRequests from './pages/PrayerRequests'
 import PublicPrayerRequest from './pages/PublicPrayerRequest'
 import HabitTracker from './pages/HabitTracker'
 import TaxStatements from './pages/TaxStatements'
+import PublicMemberRegister from './pages/PublicMemberRegister'
+import MemberQRCode from './pages/MemberQRCode'
 
 const Protected = ({ children }) => (
   <ProtectedRoute>
@@ -56,6 +58,7 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password"  element={<ResetPassword />} />
           <Route path="/pray"            element={<PublicPrayerRequest />} />
+          <Route path="/join"            element={<PublicMemberRegister />} />
           <Route path="/habits"          element={<HabitTracker />} />
           <Route path="/profile"         element={<Protected><Profile /></Protected>} />
 
@@ -64,6 +67,7 @@ function App() {
           <Route path="/expenses"      element={<Protected><Expenses /></Protected>} />
           <Route path="/funds"         element={<Protected><Funds /></Protected>} />
           <Route path="/members"       element={<Protected><Members /></Protected>} />
+          <Route path="/members/qr"    element={<Protected><MemberQRCode /></Protected>} />
           <Route path="/reports"       element={<Protected><Reports /></Protected>} />
           <Route path="/mpesa"         element={<Protected><MpesaPage /></Protected>} />
           <Route path="/audit"         element={<Protected><AuditLogs /></Protected>} />
