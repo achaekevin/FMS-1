@@ -50,6 +50,47 @@ exports.create = async (req, res) => {
   }
 };
 
+/**
+ * POST /members/self-register  — PUBLIC, no auth required
+ * Member fills in their own details via the /join form.
+ * Creates with status 'active' and marks as pending review.
+ */
+exports.selfRegister = async (req, res) => {
+  try {
+    const {
+      fullName, phone, email, gender, dateOfBirth,
+      address, branchId,
+    } = req.body;
+
+    // Prevent duplicate phone registrations
+    const existing = await Member.findOne({ where: { phone } });
+    if (existing) {
+      return api.conflict(res,
+        'A member with this phone number already exists. Please contact the church office if you need help.');
+    }
+
+    const member = await Member.create({
+      fullName: fullName.trim(),
+      phone:    phone.trim(),
+      email:    email?.trim()       || null,
+      gender:   gender              || null,
+      dateOfBirth: dateOfBirth      || null,
+      address:  address?.trim()     || null,
+      branchId: branchId            || null,
+      status:   'active',
+      joinDate: new Date(),
+    });
+
+    return api.created(res, {
+      id:       member.id,
+      fullName: member.fullName,
+      phone:    member.phone,
+    }, `Welcome to ${process.env.CHURCH_NAME || 'Grace Life Church'}, ${member.fullName}! Your registration is complete.`);
+  } catch (err) {
+    return api.error(res, err.message);
+  }
+};
+
 exports.update = async (req, res) => {
   try {
     const member = await Member.findByPk(req.params.id);
