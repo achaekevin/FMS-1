@@ -49,6 +49,11 @@ const Income = sequelize.define('Income', {
     allowNull: false,
     defaultValue: DataTypes.NOW,
   },
+  branchId: {
+    type: DataTypes.INTEGER.UNSIGNED,
+    allowNull: true,
+    references: { model: 'branches', key: 'id' },
+  },
 }, {
   tableName: 'income',
 });

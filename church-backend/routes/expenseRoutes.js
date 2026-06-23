@@ -3,10 +3,11 @@ const router   = express.Router();
 const { body } = require('express-validator');
 const validate = require('../middleware/validate');
 const { authenticate, authorize, adminOnly, adminOrTreasurer } = require('../middleware/auth');
+const { branchScope } = require('../middleware/branchScope');
 const upload   = require('../middleware/upload');
 const ctrl     = require('../controllers/expenseController');
 
-router.use(authenticate);
+router.use(authenticate, branchScope);
 
 // ── Read (all authenticated roles) ────────────────────────
 router.get('/',          ctrl.getAll);

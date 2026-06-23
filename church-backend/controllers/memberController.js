@@ -1,6 +1,7 @@
 const { Member, Income } = require('../models');
 const api    = require('../utils/apiResponse');
 const audit  = require('../services/auditService');
+const { buildBranchFilter } = require('../middleware/branchScope');
 const { getPagination, buildDateFilter } = require('../utils/helpers');
 const { Op, fn, col, literal } = require('sequelize');
 
@@ -8,7 +9,7 @@ exports.getAll = async (req, res) => {
   try {
     const { page = 1, limit = 10, search, status } = req.query;
     const { limit: lim, offset } = getPagination(page, limit);
-    const where = {};
+    const where = { ...buildBranchFilter(req.branchScope) };
     if (search) where[Op.or] = [
       { fullName: { [Op.like]: `%${search}%` } },
       { phone:    { [Op.like]: `%${search}%` } },
@@ -37,7 +38,8 @@ exports.getById = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
-    const member = await Member.create(req.body);
+    const branchId = req.branchScope?.isGlobal ? (req.body.branchId || null) : req.branchScope?.branchId;
+    const member = await Member.create({ ...req.body, branchId });
     await audit.log(req.user.id, 'CREATE', 'MEMBER',
       `Added member: ${member.fullName}`,
       { memberId: member.id }, req,

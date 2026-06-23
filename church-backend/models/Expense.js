@@ -84,6 +84,11 @@ const Expense = sequelize.define('Expense', {
     type: DataTypes.DATE,
     allowNull: true,
   },
+  branchId: {
+    type: DataTypes.INTEGER.UNSIGNED,
+    allowNull: true,
+    references: { model: 'branches', key: 'id' },
+  },
 }, {
   tableName: 'expenses',
 });

@@ -33,6 +33,12 @@ const Fund = sequelize.define('Fund', {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
   },
+  branchId: {
+    type: DataTypes.INTEGER.UNSIGNED,
+    allowNull: true,
+    references: { model: 'branches', key: 'id' },
+    comment: 'NULL = shared global fund; set for branch-specific funds',
+  },
 }, {
   tableName: 'funds',
 });

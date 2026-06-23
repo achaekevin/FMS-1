@@ -2,6 +2,7 @@ const { Income, Member, Fund, User } = require('../models');
 const api    = require('../utils/apiResponse');
 const audit  = require('../services/auditService');
 const fund   = require('../services/fundService');
+const { buildBranchFilter } = require('../middleware/branchScope');
 const { getPagination, buildDateFilter } = require('../utils/helpers');
 const { sequelize } = require('../config/sequelize');
 const { Op, fn, col } = require('sequelize');
@@ -16,7 +17,10 @@ exports.getAll = async (req, res) => {
   try {
     const { page = 1, limit = 10, search, type, paymentMethod, startDate, endDate, month, year, fundId } = req.query;
     const { limit: lim, offset } = getPagination(page, limit);
-    const where = { ...buildDateFilter(startDate, endDate, month, year) };
+    const where = {
+      ...buildDateFilter(startDate, endDate, month, year),
+      ...buildBranchFilter(req.branchScope),
+    };
 
     if (type)          where.type          = type;
     if (paymentMethod) where.paymentMethod = paymentMethod;
@@ -53,7 +57,8 @@ exports.getById = async (req, res) => {
 exports.create = async (req, res) => {
   const t = await sequelize.transaction();
   try {
-    const record = await Income.create({ ...req.body, recordedBy: req.user.id }, { transaction: t });
+    const branchId = req.branchScope?.isGlobal ? (req.body.branchId || null) : req.branchScope?.branchId;
+    const record = await Income.create({ ...req.body, recordedBy: req.user.id, branchId }, { transaction: t });
     if (req.body.fundId) await fund.creditFund(req.body.fundId, req.body.amount, t);
     await t.commit();
 
@@ -121,7 +126,10 @@ exports.remove = async (req, res) => {
 exports.getSummary = async (req, res) => {
   try {
     const { startDate, endDate, month, year } = req.query;
-    const where = buildDateFilter(startDate, endDate, month, year);
+    const where = {
+      ...buildDateFilter(startDate, endDate, month, year),
+      ...buildBranchFilter(req.branchScope),
+    };
 
     const byType = await Income.findAll({
       where,

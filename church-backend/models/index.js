@@ -92,6 +92,19 @@ BranchUser.belongsTo(User,   { foreignKey: 'userId',   as: 'user' });
 Branch.hasMany(BranchUser,   { foreignKey: 'branchId', as: 'branchUsers' });
 User.hasMany(BranchUser,     { foreignKey: 'userId',   as: 'branchUsers' });
 
+// ── Branch-scoped record associations ─────────────────────
+Income.belongsTo(Branch,  { foreignKey: 'branchId', as: 'branch' });
+Branch.hasMany(Income,    { foreignKey: 'branchId', as: 'incomes' });
+
+Expense.belongsTo(Branch, { foreignKey: 'branchId', as: 'branch' });
+Branch.hasMany(Expense,   { foreignKey: 'branchId', as: 'expenses' });
+
+Member.belongsTo(Branch,  { foreignKey: 'branchId', as: 'branch' });
+Branch.hasMany(Member,    { foreignKey: 'branchId', as: 'members' });
+
+Fund.belongsTo(Branch,    { foreignKey: 'branchId', as: 'branch' });
+Branch.hasMany(Fund,      { foreignKey: 'branchId', as: 'funds' });
+
 // ── Announcement associations ─────────────────────────────
 Announcement.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
 User.hasMany(Announcement,   { foreignKey: 'createdBy', as: 'announcements' });

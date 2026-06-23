@@ -3,9 +3,10 @@ const router  = express.Router();
 const { body } = require('express-validator');
 const validate = require('../middleware/validate');
 const { authenticate, allRoles, adminOrTreasurer } = require('../middleware/auth');
+const { branchScope } = require('../middleware/branchScope');
 const ctrl = require('../controllers/memberController');
 
-router.use(authenticate, allRoles);
+router.use(authenticate, branchScope, allRoles);
 
 router.get('/', ctrl.getAll);
 router.get('/:id', ctrl.getById);

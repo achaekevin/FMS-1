@@ -44,6 +44,11 @@ const Member = sequelize.define('Member', {
     type: DataTypes.ENUM('active', 'inactive', 'transferred'),
     defaultValue: 'active',
   },
+  branchId: {
+    type: DataTypes.INTEGER.UNSIGNED,
+    allowNull: true,
+    references: { model: 'branches', key: 'id' },
+  },
 }, {
   tableName: 'members',
 });

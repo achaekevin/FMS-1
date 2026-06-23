@@ -1,39 +1,51 @@
 const { Income, Expense, Member, Fund, MpesaTransaction, Budget, Event, Asset, Employee } = require('../models');
+const { Branch, BranchUser } = require('../models');
 const api = require('../utils/apiResponse');
+const { buildBranchFilter } = require('../middleware/branchScope');
 const { fn, col, literal, Op } = require('sequelize');
 
 /** GET /dashboard/stats */
 exports.getStats = async (req, res) => {
   try {
+    const bf = buildBranchFilter(req.branchScope);
+    const isGlobal = req.branchScope?.isGlobal !== false;
+
     const [
       totalIncome, totalExpenses, totalMembers,
       totalTithes, totalDonations, totalOfferings,
       pendingMpesa, totalAssets, totalEmployees, upcomingEvents,
     ] = await Promise.all([
-      Income.sum('amount')  || 0,
-      Expense.sum('amount') || 0,
-      Member.count({ where: { status: 'active' } }),
-      Income.sum('amount', { where: { type: 'Tithe' } })    || 0,
-      Income.sum('amount', { where: { type: 'Donation' } }) || 0,
-      Income.sum('amount', { where: { type: 'Offering' } }) || 0,
+      Income.sum('amount',  { where: { ...bf } }) || 0,
+      Expense.sum('amount', { where: { ...bf } }) || 0,
+      Member.count({ where: { status: 'active', ...bf } }),
+      Income.sum('amount', { where: { type: 'Tithe',    ...bf } }) || 0,
+      Income.sum('amount', { where: { type: 'Donation', ...bf } }) || 0,
+      Income.sum('amount', { where: { type: 'Offering', ...bf } }) || 0,
+      // MpesaTransactions and Assets/Employees are global — no branch filter
       MpesaTransaction.count({ where: { status: 'pending' } }),
       Asset.sum('value')    || 0,
       Employee.count({ where: { status: 'active' } }),
       Event.count({ where: { eventDate: { [Op.gte]: new Date() }, status: 'upcoming' } }),
     ]);
 
+    // Branch context metadata for the frontend
+    const branchMeta = req.branchScope?.isGlobal
+      ? { scope: 'global', branchName: 'All Branches' }
+      : { scope: 'branch', branchName: req.branchScope?.branch?.name || 'Your Branch', branchId: req.branchScope?.branchId };
+
     return api.success(res, {
-      totalIncome:     parseFloat(totalIncome   || 0),
-      totalExpenses:   parseFloat(totalExpenses || 0),
-      netBalance:      parseFloat(totalIncome || 0) - parseFloat(totalExpenses || 0),
+      totalIncome:    parseFloat(totalIncome   || 0),
+      totalExpenses:  parseFloat(totalExpenses || 0),
+      netBalance:     parseFloat(totalIncome   || 0) - parseFloat(totalExpenses || 0),
       totalMembers,
-      totalTithes:     parseFloat(totalTithes    || 0),
-      totalDonations:  parseFloat(totalDonations || 0),
-      totalOfferings:  parseFloat(totalOfferings || 0),
+      totalTithes:    parseFloat(totalTithes    || 0),
+      totalDonations: parseFloat(totalDonations || 0),
+      totalOfferings: parseFloat(totalOfferings || 0),
       pendingMpesa,
-      totalAssets:     parseFloat(totalAssets || 0),
+      totalAssets:    parseFloat(totalAssets || 0),
       totalEmployees,
       upcomingEvents,
+      branchMeta,
     });
   } catch (err) { return api.error(res, err.message); }
 };
@@ -42,9 +54,11 @@ exports.getStats = async (req, res) => {
 exports.getMonthlyStats = async (req, res) => {
   try {
     const months = Math.min(parseInt(req.query.months) || 6, 24);
+    const bf = buildBranchFilter(req.branchScope);
 
     const [incomeByMonth, expenseByMonth] = await Promise.all([
       Income.findAll({
+        where: { ...bf },
         attributes: [
           [fn('DATE_FORMAT', col('date'), '%Y-%m'), 'month'],
           [fn('SUM', col('amount')), 'total'],
@@ -55,6 +69,7 @@ exports.getMonthlyStats = async (req, res) => {
         raw: true,
       }),
       Expense.findAll({
+        where: { ...bf },
         attributes: [
           [fn('DATE_FORMAT', col('date'), '%Y-%m'), 'month'],
           [fn('SUM', col('amount')), 'total'],
@@ -82,13 +97,14 @@ exports.getMonthlyStats = async (req, res) => {
 /** GET /dashboard/contribution-trends?months=6 */
 exports.getContributionTrends = async (req, res) => {
   try {
-    const months = Math.min(parseInt(req.query.months) || 6, 24);
-    const types  = ['Tithe', 'Offering', 'Donation'];
+    const months  = Math.min(parseInt(req.query.months) || 6, 24);
+    const bf      = buildBranchFilter(req.branchScope);
+    const types   = ['Tithe', 'Offering', 'Donation'];
     const results = {};
 
     for (const type of types) {
       const rows = await Income.findAll({
-        where: { type },
+        where: { type, ...bf },
         attributes: [
           [fn('DATE_FORMAT', col('date'), '%Y-%m'), 'month'],
           [fn('SUM', col('amount')), 'total'],
@@ -115,10 +131,11 @@ exports.getTopContributors = async (req, res) => {
     const limit = Math.min(parseInt(req.query.limit) || 10, 50);
     const { startDate, endDate, year, month } = req.query;
     const { buildDateFilter } = require('../utils/helpers');
+    const bf         = buildBranchFilter(req.branchScope);
     const dateFilter = buildDateFilter(startDate, endDate, month, year);
 
     const rows = await Income.findAll({
-      where: { memberId: { [Op.ne]: null }, ...dateFilter },
+      where: { memberId: { [Op.ne]: null }, ...dateFilter, ...bf },
       attributes: [
         'memberId',
         [fn('SUM', col('amount')), 'total'],
@@ -132,11 +149,11 @@ exports.getTopContributors = async (req, res) => {
     });
 
     const contributors = rows.map(r => ({
-      memberId:  r.memberId,
-      fullName:  r.member?.fullName || 'Anonymous',
-      phone:     r.member?.phone,
-      total:     parseFloat(r.dataValues.total || 0),
-      count:     parseInt(r.dataValues.count   || 0),
+      memberId: r.memberId,
+      fullName: r.member?.fullName || 'Anonymous',
+      phone:    r.member?.phone,
+      total:    parseFloat(r.dataValues.total || 0),
+      count:    parseInt(r.dataValues.count   || 0),
     }));
     return api.success(res, contributors);
   } catch (err) { return api.error(res, err.message); }
@@ -157,12 +174,15 @@ exports.getFundOverview = async (req, res) => {
 exports.getRecentTransactions = async (req, res) => {
   try {
     const limit = Math.min(parseInt(req.query.limit) || 10, 50);
+    const bf    = buildBranchFilter(req.branchScope);
     const [income, expenses] = await Promise.all([
       Income.findAll({
+        where: { ...bf },
         limit, order: [['date','DESC'],['createdAt','DESC']],
         include: [{ model: Member, as: 'member', attributes: ['fullName'] }],
       }),
       Expense.findAll({
+        where: { ...bf },
         limit, order: [['date','DESC'],['createdAt','DESC']],
       }),
     ]);
@@ -183,14 +203,15 @@ exports.getRecentTransactions = async (req, res) => {
 /** GET /dashboard/yearly-comparison?years=3 */
 exports.getYearlyComparison = async (req, res) => {
   try {
-    const numYears = Math.min(parseInt(req.query.years) || 3, 5);
+    const numYears   = Math.min(parseInt(req.query.years) || 3, 5);
     const currentYear = new Date().getFullYear();
-    const yearList = Array.from({ length: numYears }, (_, i) => currentYear - i);
+    const yearList   = Array.from({ length: numYears }, (_, i) => currentYear - i);
+    const bf         = buildBranchFilter(req.branchScope);
 
     const rows = await Promise.all(yearList.map(async (yr) => {
       const [income, expenses] = await Promise.all([
-        Income.sum('amount',  { where: { date: { [Op.between]: [`${yr}-01-01`, `${yr}-12-31`] } } }) || 0,
-        Expense.sum('amount', { where: { date: { [Op.between]: [`${yr}-01-01`, `${yr}-12-31`] } } }) || 0,
+        Income.sum('amount',  { where: { date: { [Op.between]: [`${yr}-01-01`, `${yr}-12-31`] }, ...bf } }) || 0,
+        Expense.sum('amount', { where: { date: { [Op.between]: [`${yr}-01-01`, `${yr}-12-31`] }, ...bf } }) || 0,
       ]);
       return {
         year:     yr,
@@ -199,6 +220,55 @@ exports.getYearlyComparison = async (req, res) => {
         net:      parseFloat(income) - parseFloat(expenses),
       };
     }));
-    return api.success(res, rows.reverse()); // oldest first
+    return api.success(res, rows.reverse());
+  } catch (err) { return api.error(res, err.message); }
+};
+
+/** GET /dashboard/branches-overview
+ *  Admin/Pastor only — consolidated view of all active branches with their KPIs
+ */
+exports.getBranchesOverview = async (req, res) => {
+  try {
+    if (!req.branchScope?.isGlobal)
+      return api.forbidden(res, 'Branch overview is only available to global admins and pastors');
+
+    const branches = await Branch.findAll({
+      where: { status: 'active' },
+      attributes: ['id','name','location','isMain'],
+      order: [['isMain','DESC'],['name','ASC']],
+    });
+
+    const overview = await Promise.all(branches.map(async (b) => {
+      const [income, expenses, members] = await Promise.all([
+        Income.sum('amount',  { where: { branchId: b.id } }) || 0,
+        Expense.sum('amount', { where: { branchId: b.id } }) || 0,
+        Member.count({ where: { status: 'active', branchId: b.id } }),
+      ]);
+      return {
+        id:        b.id,
+        name:      b.name,
+        location:  b.location,
+        isMain:    b.isMain,
+        income:    parseFloat(income),
+        expenses:  parseFloat(expenses),
+        net:       parseFloat(income) - parseFloat(expenses),
+        members,
+      };
+    }));
+
+    // Add global/unscoped totals (branchId IS NULL)
+    const [globalIncome, globalExpenses, globalMembers] = await Promise.all([
+      Income.sum('amount',  { where: { branchId: null } }) || 0,
+      Expense.sum('amount', { where: { branchId: null } }) || 0,
+      Member.count({ where: { status: 'active', branchId: null } }),
+    ]);
+    overview.push({
+      id: null, name: 'Main / Unassigned', location: null, isMain: true,
+      income: parseFloat(globalIncome), expenses: parseFloat(globalExpenses),
+      net: parseFloat(globalIncome) - parseFloat(globalExpenses),
+      members: globalMembers,
+    });
+
+    return api.success(res, overview);
   } catch (err) { return api.error(res, err.message); }
 };

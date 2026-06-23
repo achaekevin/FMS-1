@@ -4,6 +4,7 @@ const audit       = require('../services/auditService');
 const fundSvc     = require('../services/fundService');
 const notify      = require('../services/notificationService');
 const { Setting } = require('../models');
+const { buildBranchFilter } = require('../middleware/branchScope');
 const { getPagination, buildDateFilter } = require('../utils/helpers');
 const { sequelize } = require('../config/sequelize');
 const { Op, fn, col } = require('sequelize');
@@ -46,7 +47,10 @@ exports.getAll = async (req, res) => {
   try {
     const { page = 1, limit = 10, category, status, startDate, endDate, month, year, fundId } = req.query;
     const { limit: lim, offset } = getPagination(page, limit);
-    const where = { ...buildDateFilter(startDate, endDate, month, year) };
+    const where = {
+      ...buildDateFilter(startDate, endDate, month, year),
+      ...buildBranchFilter(req.branchScope),
+    };
     if (category) where.category = category;
     if (status)   where.status   = status;
     if (fundId)   where.fundId   = fundId;
@@ -96,6 +100,7 @@ exports.create = async (req, res) => {
       ...req.body,
       recordedBy: req.user.id,
       approvedBy: null,
+      branchId: req.branchScope?.isGlobal ? (req.body.branchId || null) : req.branchScope?.branchId,
     };
     if (req.file) data.receiptPath = req.file.path;
 
@@ -356,7 +361,10 @@ exports.getThreshold = async (req, res) => {
 exports.getSummary = async (req, res) => {
   try {
     const { startDate, endDate, month, year } = req.query;
-    const where = buildDateFilter(startDate, endDate, month, year);
+    const where = {
+      ...buildDateFilter(startDate, endDate, month, year),
+      ...buildBranchFilter(req.branchScope),
+    };
 
     const byCategory = await Expense.findAll({
       where,
@@ -375,6 +383,7 @@ exports.getSummary = async (req, res) => {
       raw: true,
     });
     const byStatus = await Expense.findAll({
+      where,
       attributes: ['status', [fn('COUNT', col('id')), 'count'], [fn('SUM', col('amount')), 'total']],
       group: ['status'],
       raw: true,

@@ -1,11 +1,26 @@
 const { Fund, Income, Expense } = require('../models');
 const api   = require('../utils/apiResponse');
 const audit = require('../services/auditService');
+const { buildBranchFilter } = require('../middleware/branchScope');
 const { buildDateFilter } = require('../utils/helpers');
 
 exports.getAll = async (req, res) => {
   try {
-    const funds = await Fund.findAll({ order: [['fundName', 'ASC']] });
+    // Global funds (branchId IS NULL) are always visible to everyone.
+    // Scoped users also see their own branch funds.
+    const { Op } = require('sequelize');
+    let where = {};
+    if (req.branchScope && !req.branchScope.isGlobal) {
+      const { branchIds } = req.branchScope;
+      // Show global funds + their branch funds
+      where = {
+        [Op.or]: [
+          { branchId: null },
+          ...(branchIds?.length ? [{ branchId: { [Op.in]: branchIds } }] : []),
+        ],
+      };
+    }
+    const funds = await Fund.findAll({ where, order: [['fundName', 'ASC']] });
     return api.success(res, funds);
   } catch (err) {
     return api.error(res, err.message);
