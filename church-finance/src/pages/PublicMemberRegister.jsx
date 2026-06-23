@@ -59,8 +59,8 @@ export default function PublicMemberRegister() {
           </div>
           <h2 className="text-2xl font-black text-gray-900 mb-1">Welcome! 🎉</h2>
           <p className="text-gray-500 text-sm mb-6 leading-relaxed">
-            <strong className="text-gray-800">{form.fullName}</strong>, your registration is complete.
-            You are now part of the {CHURCH} family!
+            <strong className="text-gray-800">{form.fullName}</strong>, your registration has been received.
+            The church team will review and activate your account — you will receive an email confirmation shortly.
           </p>
 
           {/* Member ID card */}
@@ -83,7 +83,7 @@ export default function PublicMemberRegister() {
           </div>
 
           <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 text-sm text-amber-700 mb-6">
-            📌 Please save your phone number as your member ID. You'll need it for future reference.
+            ⏳ Your registration is <strong>pending approval</strong>. The church office will review your details and activate your account. If you provided an email, you will receive a confirmation once approved.
           </div>
 
           <button
