@@ -1,8 +1,11 @@
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useFinance } from '../contexts/FinanceContext'
 import { useAuth } from '../contexts/AuthContext'
 import StatCard from '../components/common/StatCard'
+import BranchScopeBar from '../components/common/BranchScopeBar'
+import BranchesOverview from '../components/dashboard/BranchesOverview'
+import api from '../utils/api'
 import {
   TrendingUp, TrendingDown, Wallet, Users, HandCoins, Gift,
   ArrowUpRight, ArrowDownRight, Inbox, BarChart3, Activity, Medal
@@ -46,6 +49,16 @@ const COLORS = ['#4f4fe8', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
 export default function Dashboard() {
   const { totalIncome, totalExpenses, netBalance, totalTithes, totalDonations, members, income, expenses, logs } = useFinance()
   const { user } = useAuth()
+
+  // Branch scope — fetched from the real API stats endpoint
+  const [branchMeta, setBranchMeta] = useState(null)
+  const isGlobal = ['administrator', 'pastor'].includes(user?.role)
+
+  useEffect(() => {
+    api.get('/dashboard/stats').then(r => {
+      setBranchMeta(r.data.data?.branchMeta || null)
+    }).catch(() => {})
+  }, [])
 
   // Build monthly data dynamically
   const monthlyData = useMemo(() => {
@@ -124,6 +137,11 @@ export default function Dashboard() {
           System Active
         </div>
       </div>
+
+      {/* Branch scope indicator */}
+      {branchMeta && (
+        <BranchScopeBar branchMeta={branchMeta} />
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
@@ -364,6 +382,8 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+      {/* Branches Overview — admin/pastor only */}
+      {isGlobal && <BranchesOverview />}
     </div>
   )
 }
