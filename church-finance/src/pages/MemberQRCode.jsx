@@ -239,7 +239,15 @@ export default function MemberQRCode() {
   const [pendingCount, setPendingCount] = useState(0)
   const [tab, setTab] = useState('qr')   // 'qr' | 'pending'
 
-  const registrationUrl = `${window.location.origin}/join`
+  const getRegistrationUrl = () => {
+    // Use VITE_PUBLIC_URL env var if set (for production/ngrok/real domain)
+    // Otherwise fall back to the detected local network IP
+    const envUrl = import.meta.env.VITE_PUBLIC_URL
+    if (envUrl) return `${envUrl}/join`
+    // Replace localhost with actual network IP so phones on the same WiFi can reach it
+    return window.location.origin.replace('localhost', '192.168.100.29').replace('127.0.0.1', '192.168.100.29') + '/join'
+  }
+  const registrationUrl = getRegistrationUrl()
 
   // Re-generate QR whenever opts change
   useEffect(() => {
