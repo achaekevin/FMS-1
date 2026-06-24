@@ -16,8 +16,6 @@ const BAPTISM_INCLUDE = [
   { model: Visitor, as: 'visitor',  attributes: ['id','fullName'], required: false },
 ];
 
-// ─── VISITORS ─────────────────────────────────────────────
-
 exports.getVisitors = async (req, res) => {
   try {
     const { page = 1, limit = 20, search, followUpStatus, conversionStatus,
@@ -99,8 +97,6 @@ exports.deleteVisitor = async (req, res) => {
     return api.success(res, null, 'Visitor deleted');
   } catch (err) { return api.error(res, err.message); }
 };
-
-// ─── BAPTISMS ─────────────────────────────────────────────
 
 exports.getBaptisms = async (req, res) => {
   try {
