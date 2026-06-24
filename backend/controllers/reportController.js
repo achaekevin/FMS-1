@@ -14,9 +14,6 @@ const EXPENSE_INCLUDE = [
   { model: Fund, as: 'fund', attributes: ['id', 'fundName'] },
 ];
 
-/**
- * GET /reports/income
- */
 exports.incomeReport = async (req, res) => {
   try {
     const { startDate, endDate, month, year, format } = req.query;
@@ -35,9 +32,6 @@ exports.incomeReport = async (req, res) => {
   }
 };
 
-/**
- * GET /reports/expenses
- */
 exports.expenseReport = async (req, res) => {
   try {
     const { startDate, endDate, month, year, format } = req.query;
@@ -56,9 +50,6 @@ exports.expenseReport = async (req, res) => {
   }
 };
 
-/**
- * GET /reports/funds
- */
 exports.fundReport = async (req, res) => {
   try {
     const { startDate, endDate, month, year } = req.query;
@@ -86,9 +77,6 @@ exports.fundReport = async (req, res) => {
   }
 };
 
-/**
- * GET /reports/contributions
- */
 exports.contributionReport = async (req, res) => {
   try {
     const { startDate, endDate, month, year, format } = req.query;
@@ -119,9 +107,6 @@ exports.contributionReport = async (req, res) => {
   }
 };
 
-/**
- * GET /reports/member/:id/statement (PDF)
- */
 exports.memberStatement = async (req, res) => {
   try {
     const { id } = req.params;
