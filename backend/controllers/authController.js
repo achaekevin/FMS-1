@@ -181,7 +181,10 @@ exports.forgotPassword = async (req, res) => {
 
     await user.update({ resetToken: token, resetTokenExpiry: expiresAt });
 
-    await emailSvc.sendPasswordResetEmail(user, token);
+    // Fire-and-forget — don't block the response waiting for SMTP
+    emailSvc.sendPasswordResetEmail(user, token).catch(err =>
+      logger.error('forgotPassword email error:', err.message)
+    );
     await audit.log(user.id, 'UPDATE', 'AUTH', `Password reset requested for ${user.email}`, null, req);
 
     return api.success(res, null, 'If that email exists, a reset link has been sent.');

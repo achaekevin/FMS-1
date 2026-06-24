@@ -1,14 +1,28 @@
 const nodemailer = require('nodemailer');
 const logger = require('../utils/logger');
 
+/**
+ * Build transporter — tries the configured port first,
+ * with a 10-second connection timeout so it fails fast instead of hanging.
+ */
 const getTransporter = () => {
+  const port   = parseInt(process.env.SMTP_PORT) || 587;
+  const secure = port === 465 || process.env.SMTP_SECURE === 'true';
+
   return nodemailer.createTransport({
-    host:   process.env.SMTP_HOST   || 'smtp.gmail.com',
-    port:   parseInt(process.env.SMTP_PORT) || 587,
-    secure: process.env.SMTP_SECURE === 'true',
+    host:   process.env.SMTP_HOST || 'smtp.gmail.com',
+    port,
+    secure,
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
+    },
+    // Fail fast — don't wait 2 minutes for a blocked port
+    connectionTimeout: 10000,   // 10 seconds
+    greetingTimeout:   8000,
+    socketTimeout:     10000,
+    tls: {
+      rejectUnauthorized: false,   // avoids cert issues on some networks
     },
   });
 };

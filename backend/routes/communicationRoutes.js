@@ -106,4 +106,12 @@ router.post('/whatsapp/test', adminOnly, [
   body('phone').notEmpty().withMessage('phone is required'),
 ], validate, ctrl.testWhatsApp);
 
+/**
+ * POST /api/communications/email/test
+ * Body: { to } — sends a test email and returns full error if it fails
+ */
+router.post('/email/test', adminOnly, [
+  body('to').isEmail().withMessage('Valid email address required'),
+], validate, ctrl.testEmail);
+
 module.exports = router;

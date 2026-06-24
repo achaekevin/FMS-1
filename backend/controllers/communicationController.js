@@ -209,3 +209,70 @@ exports.testWhatsApp = async (req, res) => {
     }
   } catch (err) { return api.error(res, err.message); }
 };
+
+/**
+ * POST /communications/email/test
+ * Sends a test email and returns the exact error if it fails — for diagnosis.
+ */
+exports.testEmail = async (req, res) => {
+  const { to } = req.body;
+
+  const config = {
+    SMTP_HOST:   process.env.SMTP_HOST   || 'NOT SET',
+    SMTP_PORT:   process.env.SMTP_PORT   || 'NOT SET',
+    SMTP_SECURE: process.env.SMTP_SECURE || 'NOT SET',
+    SMTP_USER:   process.env.SMTP_USER   || 'NOT SET',
+    SMTP_PASS:   process.env.SMTP_PASS
+      ? `${process.env.SMTP_PASS.slice(0,4)}…` : 'NOT SET',
+  };
+
+  // Step 1: verify connection first so we get a fast diagnostic
+  const port   = parseInt(process.env.SMTP_PORT) || 587;
+
+  // Send directly — verify() is redundant when we're about to send anyway
+  // and doing both doubles the round-trip time, which causes frontend timeouts.
+  try {
+    const result = await emailSvc.send({
+      to,
+      subject: `✅ Test Email — ${process.env.CHURCH_NAME || 'Church FMS'}`,
+      html: `<p>This is a test email from your Church Finance System.</p>
+             <p>If you receive this, email is working correctly! ✅</p>
+             <p><small>Sent: ${new Date().toLocaleString('en-KE')}</small></p>`,
+    });
+
+    return api.success(res, {
+      config,
+      result: { messageId: result.messageId || 'sent', accepted: result.accepted },
+    }, `Test email sent to ${to} ✅ — check your inbox (and spam folder)`);
+  } catch (err) {
+    return api.success(res, {
+      config,
+      step:      'SEND',
+      error:     err.message,
+      code:      err.code,
+      diagnosis: getEmailDiagnosis(err),
+      fix: port === 587
+        ? 'Try changing SMTP_PORT=465 and SMTP_SECURE=true in your .env and restart the server.'
+        : 'Try changing SMTP_PORT=587 and SMTP_SECURE=false in your .env and restart the server.',
+    }, 'SMTP send failed — see error details');
+  }
+};
+
+const getEmailDiagnosis = (err) => {
+  const msg = err.message?.toLowerCase() || '';
+  const code = err.code || '';
+
+  if (code === 'EAUTH' || msg.includes('invalid login') || msg.includes('username and password'))
+    return '❌ Authentication failed. For Gmail: you must use an App Password, not your regular password. See fix below.';
+  if (msg.includes('less secure') || msg.includes('application-specific'))
+    return '❌ Gmail is blocking the login. You need to generate an App Password.';
+  if (code === 'ECONNREFUSED')
+    return '❌ Cannot connect to SMTP server. Check SMTP_HOST and SMTP_PORT.';
+  if (code === 'ETIMEDOUT' || msg.includes('timeout'))
+    return '❌ Connection timed out. Your network may be blocking port 587. Try SMTP_PORT=465 with SMTP_SECURE=true.';
+  if (msg.includes('self signed') || msg.includes('certificate'))
+    return '❌ SSL certificate error. Try setting SMTP_SECURE=false.';
+  if (msg.includes('quota') || msg.includes('rate limit'))
+    return '❌ Gmail sending limit reached. Wait 24 hours or use a different email service.';
+  return `Unknown error. Full message: ${err.message}`;
+};
